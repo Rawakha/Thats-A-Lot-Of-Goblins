@@ -14,6 +14,7 @@
   <Project Path="Unity.Collections.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.2D.Runtime.csproj" />
   <Project Path="UnityEngine.UI.csproj" />
+  <Project Path="Assembly-CSharp-firstpass.csproj" />
   <Project Path="Unity.InferenceEngine.Microsoft.Msagl.csproj" />
   <Project Path="Unity.VisualScripting.Core.Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Editor.csproj" />
@@ -69,6 +70,7 @@
   <Project Path="UnityEditor.UI.csproj" />
   <Project Path="Unity.AI.Tracing.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.2D.Editor.Overrides.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.PlasticSCM.Editor.Assistant.csproj" />
   <Project Path="Unity.2D.Sprite.Editor.csproj" />
   <Project Path="Unity.AI.Navigation.Editor.csproj" />
@@ -105,7 +107,9 @@
   <Project Path="Unity.AI.Toolkit.Async.csproj" />
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
   <Project Path="Unity.AI.Assistant.Bridge.Editor.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Unity.AI.Toolkit.Compliance.csproj" />
+  <Project Path="Assembly-CSharp-Editor-firstpass.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.RenderPipelines.Core.Editor.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.004.csproj" />
   <Project Path="Unity.InputSystem.DocCodeSamples.csproj" />
