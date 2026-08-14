@@ -6,7 +6,7 @@ public class EnemyMover : MonoBehaviour
 {
     public static EnemyMover Instance;
 
-    [SerializeField] private Transform target;
+    [SerializeField] private FlowField flowField;
     [SerializeField] private List<Enemy> enemies;
 
     [Header("Movement Settings")]
@@ -20,7 +20,7 @@ public class EnemyMover : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (target == null)
+        if (flowField == null)
             return;
 
         float dt = Time.fixedDeltaTime;
@@ -30,17 +30,17 @@ public class EnemyMover : MonoBehaviour
         {
             Enemy e = enemies[i];
 
-            if (e == null || e.rigidbody == null) 
+            if (e == null || e.body == null) 
                 continue;
 
-            Vector3 desired = (target.position - e.rigidbody.position).normalized * moveSpeed;
-            Vector3 delta = desired - e.rigidbody.linearVelocity;
+            Vector3 desired = flowField.Sample(e.body.position) * moveSpeed;
+            Vector3 delta = desired - e.body.linearVelocity;
             delta.y = 0f;
 
             if (delta.sqrMagnitude > maxDelta * maxDelta)
                 delta = delta.normalized * maxDelta;
 
-            e.rigidbody.AddForce(delta, ForceMode.VelocityChange);
+            e.body.AddForce(delta, ForceMode.VelocityChange);
         }
     }
 
@@ -49,10 +49,11 @@ public class EnemyMover : MonoBehaviour
         if (enemy == null)
             return;
 
-        if (enemies.Contains(enemy))
+        if (enemy.inMover)
             return;
 
         enemies.Add(enemy);
+        enemy.inMover = true;
     }
 
     public void Remove(Enemy enemy)
@@ -60,6 +61,10 @@ public class EnemyMover : MonoBehaviour
         if (enemy == null)
             return;
 
+        if (!enemy.inMover)
+            return;
+
         enemies.Remove(enemy);
+        enemy.inMover = false;
     }
 }
