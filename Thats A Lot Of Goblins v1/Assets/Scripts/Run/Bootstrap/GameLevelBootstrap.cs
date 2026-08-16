@@ -8,6 +8,8 @@ public class GameLevelBootstrap : MonoBehaviour
 
     [Header("Core")]
     [SerializeField] private AudioManager audioManager;
+    [SerializeField] private EnemyPool enemyPool;
+    [SerializeField] private RunManager runManager;
 
     [Header("Initialisation Order")]
     [SerializeField] private GameManagerBase[] managerInitializationOrder;
@@ -30,6 +32,18 @@ public class GameLevelBootstrap : MonoBehaviour
         if (!ContainsManager(audioManager))
         {
             Debug.LogError("GameBootstrap: AudioManager is not included in managerInitializationOrder.", this);
+            isValid = false;
+        }
+
+        if (!ContainsManager(enemyPool))
+        {
+            Debug.LogError("GameBootstrap: EnemyPool is not included in managerInitializationOrder.", this);
+            isValid = false;
+        }
+
+        if (!ContainsManager(runManager))
+        {
+            Debug.LogError("GameBootstrap: RunManager is not included in managerInitializationOrder.", this);
             isValid = false;
         }
 

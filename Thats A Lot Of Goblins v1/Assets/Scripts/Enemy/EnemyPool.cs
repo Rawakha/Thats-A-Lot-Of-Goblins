@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DefaultExecutionOrder(Utilities.ExecutionOrder.Singletons)]
-public class EnemyPool : MonoBehaviour
+public class EnemyPool : GameManagerBase
 {
     public static EnemyPool Instance;
 
@@ -15,13 +15,22 @@ public class EnemyPool : MonoBehaviour
     [SerializeField, ReadOnly] private int inactiveEnemies = 0;
     [SerializeField, ReadOnly] private int peakActive = 0;
 
+    private EnemyVariation enemyVariation;
     private Queue<Enemy> pool;
 
-    private void Awake()
+    protected override bool OnInitialize(GameLevelBootstrap levelBootstrap)
     {
         Utilities.CreateInstance<EnemyPool>(ref Instance, this);
 
+        if (TryGetComponent<EnemyVariation>(out EnemyVariation variation))
+        {
+            enemyVariation = variation;
+            enemyVariation.Initialize();
+        }
+
         CreatePool();
+
+        return true;
     }
 
 #if UNITY_EDITOR
@@ -51,14 +60,16 @@ public class EnemyPool : MonoBehaviour
 
     public void Return(Enemy enemy)
     {
-        if (enemy == null)
+        if (enemy == null || enemy.inPool)
             return;
 
-        if (enemy.inPool)
-            return;
+        if (enemy.body != null) 
+        {
+            enemy.body.linearVelocity = Vector3.zero;
+            enemy.body.angularVelocity = Vector3.zero;
+            enemy.body.constraints = RigidbodyConstraints.FreezeRotation;
+        }
 
-        enemy.body.linearVelocity = Vector3.zero;
-        enemy.body.angularVelocity = Vector3.zero;
         enemy.gameObject.SetActive(false);
         enemy.inPool = true;
 
@@ -70,6 +81,7 @@ public class EnemyPool : MonoBehaviour
         Enemy enemy = pool.Count > 0 ? pool.Dequeue() : SpawnNewEnemy();
         
         enemy.inPool = false;
+        enemy.facing = rotation;
         enemy.transform.SetPositionAndRotation(position, rotation);
         enemy.gameObject.SetActive(true);
 
@@ -79,6 +91,14 @@ public class EnemyPool : MonoBehaviour
     private Enemy SpawnNewEnemy()
     {
         overallPoolSize++;
-        return Instantiate(enemyPrefab, transform);
+
+        Enemy e = Instantiate(enemyPrefab, transform);
+
+        if (enemyVariation != null)
+        {
+            enemyVariation.Apply(e);
+        }
+
+        return e;
     }
 }

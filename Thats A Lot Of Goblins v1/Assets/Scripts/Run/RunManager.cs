@@ -1,16 +1,66 @@
 using UnityEngine;
 
-public class RunManager : MonoBehaviour
+public class RunManager : GameManagerBase
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public static RunManager Instance;
+
+    [SerializeField] private RunSettings settings;
+    [SerializeField] private WaveManager waveManager;
+
+    [Header("Lives")]
+    [SerializeField, ReadOnly] private int currentLives;
+
+    public bool isActive = false;
+
+    protected override bool OnInitialize(GameLevelBootstrap levelBootstrap)
     {
+        if (settings == null)
+        {
+            Debug.LogError("RunManager: RunSettings is not assigned.", this);
+            return false;
+        }
+
+        if (waveManager == null)
+        {
+            Debug.LogError("RunManager: WaveManager is not assigned.", this);
+            return false;
+        }
+
+        Utilities.CreateInstance<RunManager>(ref Instance, this);
         
+        return true;
     }
 
-    // Update is called once per frame
-    void Update()
+    [InspectorButton]
+    public void StartRun()
     {
-        
+        currentLives = settings.lives;  
+        isActive = true;
+
+        if (waveManager != null)
+        {
+            waveManager.StartWaves();
+        }
+    }
+
+    [InspectorButton]
+    public void EndRun()
+    {
+        isActive = false;
+
+        if (waveManager != null)
+        {
+            waveManager.StopWaves();
+        }
+    }
+
+    public void LoseLife()
+    {
+        currentLives--;
+
+        if (currentLives <= 0)
+        {
+            EndRun();
+        }
     }
 }

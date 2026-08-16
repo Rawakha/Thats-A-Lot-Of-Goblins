@@ -2,15 +2,33 @@ using UnityEngine;
 
 public class WaveManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [Header("Spawners")]
+    [SerializeField] private WaveSpawner[] spawners;
+
+    public void StartWaves()
     {
-        
+        SetSpawners(true);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void StopWaves()
     {
-        
+        SetSpawners(false);
+    }
+
+    private void SetSpawners(bool t)
+    {
+        if (spawners == null || spawners.Length == 0)
+            return;
+
+        foreach (var s in spawners)
+        {
+            s.SetActive(t);
+        }
+    }
+
+    [InspectorButton]
+    public void GetSpawners()
+    {
+        spawners = FindObjectsByType<WaveSpawner>();
     }
 }

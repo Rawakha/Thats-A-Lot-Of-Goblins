@@ -20,11 +20,13 @@ public class FlowField : MonoBehaviour
     [SerializeField] private bool drawDirections = false;
 
     [Header("Build")]
+    [SerializeField] private byte[] blocked;
     [SerializeField] private byte[] cost;
     [SerializeField] private ushort[] integration;
     [SerializeField] private Vector2[] directions;
 
-    const ushort Unreachable = ushort.MaxValue;
+    [Header("Test")]
+    public bool rebuildPerFrame = true;
 
     static readonly Vector2Int[] CardinalOffsets =
     {
@@ -46,11 +48,20 @@ public class FlowField : MonoBehaviour
         new Vector2Int(-1, -1),
     };
 
+    private void Update()
+    {
+        if (rebuildPerFrame)
+            Rebuild();
+    }
+
     [InspectorButton()]
     public void BakeField()
     {
-        if (!BakeCost())
+        if (costData == null)
+        {
+            Debug.LogError("FlowField: no costs asset assigned.", this);
             return;
+        }
 
         if (goal == null)
         {
@@ -58,20 +69,36 @@ public class FlowField : MonoBehaviour
             return;
         }
 
+        BakeImpassable();
+
+        BuildCost();
         BuildIntegration(grid.ToCell(goal.position));
         BuildDirections();
     }
 
-    private bool BakeCost()
+    public void Rebuild()
     {
         if (costData == null)
         {
             Debug.LogError("FlowField: no costs asset assigned.", this);
-            return false;
+            return;
         }
 
-        if (cost == null || cost.Length != grid.CellCount)
-            cost = new byte[grid.CellCount];
+        if (goal == null)
+        {
+            Debug.LogError("FlowField: no goal Transfrom assigned.", this);
+            return;
+        }
+
+        BuildCost();
+        BuildIntegration(grid.ToCell(goal.position));
+        BuildDirections();
+    }
+
+    private void BakeImpassable()
+    {
+        if (blocked == null || blocked.Length != grid.CellCount)
+            blocked = new byte[grid.CellCount];
 
         Vector3 halfExtents = new Vector3(grid.cellSize, 2f, grid.cellSize) * 0.5f;
 
@@ -80,17 +107,27 @@ public class FlowField : MonoBehaviour
         {
             Vector3 centre = grid.CellCentre(i);
 
-            bool blocked = Physics.CheckBox(centre, halfExtents, Quaternion.identity, obstacleLayer);
-            if (blocked)
+            bool isBlocked = Physics.CheckBox(centre, halfExtents, Quaternion.identity, obstacleLayer);
+            if (isBlocked)
             {
-                cost[i] = costData.Impassable;
+                blocked[i] = costData.Impassable;
                 continue;
             }
 
-            cost[i] = costData.Default;
+            blocked[i] = costData.Default;
         }
+    }
 
-        // Inflate cells adjacent to walls
+    private void BuildCost()
+    {
+        if (cost == null || cost.Length != grid.CellCount)
+            cost = new byte[grid.CellCount];
+
+        // Build cost from raw walls
+        for (int i = 0; i < blocked.Length; i++)
+            cost[i] = blocked[i];
+
+        // Build Near Wall
         for (int i = 0; i < cost.Length; i++)
         {
             if (cost[i] == costData.Impassable)
@@ -111,8 +148,6 @@ public class FlowField : MonoBehaviour
                 }
             }
         }
-
-        return true;
     }
 
     private void BuildIntegration(Vector2Int goal)
@@ -121,7 +156,7 @@ public class FlowField : MonoBehaviour
             integration = new ushort[grid.CellCount];
 
         for (int i = 0; i < integration.Length; i++)
-            integration[i] = Unreachable;
+            integration[i] = FlowFieldCosts.Unreachable;
 
         if (!grid.InBounds(goal))
             return;
@@ -171,7 +206,7 @@ public class FlowField : MonoBehaviour
         {
             directions[i] = Vector2.zero;
 
-            if (integration[i] == Unreachable || integration[i] == 0)
+            if (integration[i] == FlowFieldCosts.Unreachable || integration[i] == 0)
                 continue;
 
             Vector2Int cell = new Vector2Int(i % grid.width, i / grid.width);
@@ -216,7 +251,7 @@ public class FlowField : MonoBehaviour
 
             Vector2Int cell = new Vector2Int(i % grid.width, i / grid.width);
 
-            ushort best = Unreachable;
+            ushort best = FlowFieldCosts.Unreachable;
             Vector2Int bestOffset = Vector2Int.zero;
 
             for (int n = 0; n < 8; n++)
@@ -310,14 +345,14 @@ public class FlowField : MonoBehaviour
         // find the max reachable value so the ramp scales to the field
         int max = 1;
         for (int i = 0; i < integration.Length; i++)
-            if (integration[i] != Unreachable && integration[i] > max)
+            if (integration[i] != FlowFieldCosts.Unreachable && integration[i] > max)
                 max = integration[i];
 
         Vector3 size = new Vector3(grid.cellSize, 0.02f, grid.cellSize) * 0.9f;
 
         for (int i = 0; i < integration.Length; i++)
         {
-            if (integration[i] == Unreachable) continue;
+            if (integration[i] == FlowFieldCosts.Unreachable) continue;
 
             float t = integration[i] / (float)max;
             Gizmos.color = new Color(t, 1f - t, 0f, 0.35f);   // green near goal → red far
@@ -339,7 +374,7 @@ public class FlowField : MonoBehaviour
 
         for (int i = 0; i < integration.Length; i++)
         {
-            if (integration[i] == Unreachable) continue;
+            if (integration[i] == FlowFieldCosts.Unreachable) continue;
 
             Vector3 p = grid.CellCentre(i);
             if ((p - cam.transform.position).sqrMagnitude > 400f) continue;  // 20m cull
