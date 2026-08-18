@@ -26,8 +26,11 @@ public class RunManager : GameManagerBase
             return false;
         }
 
-        Utilities.CreateInstance<RunManager>(ref Instance, this);
-        
+        if (!Utilities.CreateInstance<RunManager>(ref Instance, this))
+        {
+            return false;
+        }
+
         return true;
     }
 

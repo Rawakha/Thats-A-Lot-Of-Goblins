@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a633e028036e12548b78039be453e1e3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 174417
+  packageName: Wind Trails Effect
+  packageVersion: 1.0
+  assetPath: Assets/WindTrailsEffect/WindTrail.mat
+  uploadId: 378249

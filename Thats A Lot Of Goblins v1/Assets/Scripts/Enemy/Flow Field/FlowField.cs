@@ -103,7 +103,7 @@ public class FlowField : MonoBehaviour
         Vector3 halfExtents = new Vector3(grid.cellSize, 2f, grid.cellSize) * 0.5f;
 
         // Find Impassable
-        for (int i = 0; i < cost.Length; i++)
+        for (int i = 0; i < blocked.Length; i++)
         {
             Vector3 centre = grid.CellCentre(i);
 

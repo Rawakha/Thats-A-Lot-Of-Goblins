@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[DefaultExecutionOrder(Utilities.ExecutionOrder.Singletons)]
 public class EnemyPool : GameManagerBase
 {
     public static EnemyPool Instance;
@@ -20,7 +19,10 @@ public class EnemyPool : GameManagerBase
 
     protected override bool OnInitialize(GameLevelBootstrap levelBootstrap)
     {
-        Utilities.CreateInstance<EnemyPool>(ref Instance, this);
+        if (!Utilities.CreateInstance<EnemyPool>(ref Instance, this))
+        {
+            return false;
+        }
 
         if (TryGetComponent<EnemyVariation>(out EnemyVariation variation))
         {
@@ -63,13 +65,13 @@ public class EnemyPool : GameManagerBase
         if (enemy == null || enemy.inPool)
             return;
 
-        if (enemy.body != null) 
+        if (enemy.body != null)
         {
             enemy.body.linearVelocity = Vector3.zero;
             enemy.body.angularVelocity = Vector3.zero;
-            enemy.body.constraints = RigidbodyConstraints.FreezeRotation;
         }
 
+        enemy.SetCollisionCallbacksEnabled(false);
         enemy.gameObject.SetActive(false);
         enemy.inPool = true;
 
@@ -79,8 +81,9 @@ public class EnemyPool : GameManagerBase
     public Enemy Get(Vector3 position, Quaternion rotation)
     {
         Enemy enemy = pool.Count > 0 ? pool.Dequeue() : SpawnNewEnemy();
-        
-        enemy.inPool = false;
+
+        enemy.ResetEnemy();
+
         enemy.facing = rotation;
         enemy.transform.SetPositionAndRotation(position, rotation);
         enemy.gameObject.SetActive(true);

@@ -42,6 +42,7 @@ public class EnemyMover : MonoBehaviour
         if (flowField == null)
             return;
 
+        float currentTime = Time.time;
         float dt = Time.fixedDeltaTime;
         float maxDelta = acceleration * dt;
 
@@ -51,6 +52,14 @@ public class EnemyMover : MonoBehaviour
 
             if (e == null || e.body == null || e.visual == null) 
                 continue;
+
+            if (currentTime < e.movementPausedUntil)
+                continue;
+
+            if (e.isRotationEnabled)
+            {
+                continue;
+            }
 
             Vector3 velocity = e.body.linearVelocity;
             velocity.y = 0f;

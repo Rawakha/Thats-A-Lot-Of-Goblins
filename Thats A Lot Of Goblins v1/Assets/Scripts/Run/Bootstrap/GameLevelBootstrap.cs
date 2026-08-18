@@ -8,6 +8,7 @@ public class GameLevelBootstrap : MonoBehaviour
 
     [Header("Core")]
     [SerializeField] private AudioManager audioManager;
+    [SerializeField] private EnemyContactManager enemyContactManager;
     [SerializeField] private EnemyPool enemyPool;
     [SerializeField] private RunManager runManager;
 
@@ -32,6 +33,12 @@ public class GameLevelBootstrap : MonoBehaviour
         if (!ContainsManager(audioManager))
         {
             Debug.LogError("GameBootstrap: AudioManager is not included in managerInitializationOrder.", this);
+            isValid = false;
+        }
+
+        if (!ContainsManager(enemyContactManager))
+        {
+            Debug.LogError("GameBootstrap: EnemyContactManager is not included in managerInitializationOrder.", this);
             isValid = false;
         }
 
@@ -124,5 +131,8 @@ public class GameLevelBootstrap : MonoBehaviour
     public void GetManagers()
     {
         if (audioManager == null) audioManager = FindAnyObjectByType<AudioManager>();
+        if (enemyContactManager == null) enemyContactManager = FindAnyObjectByType<EnemyContactManager>();
+        if (enemyPool == null) enemyPool = FindAnyObjectByType<EnemyPool>();
+        if (runManager == null) runManager = FindAnyObjectByType<RunManager>();
     }
 }

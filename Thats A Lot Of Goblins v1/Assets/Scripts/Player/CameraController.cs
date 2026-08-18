@@ -22,10 +22,6 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float panDamping = 10f;
     [SerializeField] private bool invertPan = false;
 
-    [Header("Mouse World Pos")]
-    [SerializeField] private Camera cam;
-    [SerializeField] private float groundHeight = 0f;
-
     private Vector3 targetPos;
     private Vector3 baseLocalPos;
     private Vector3 panOrigin;
@@ -34,30 +30,19 @@ public class CameraController : MonoBehaviour
     private float targetZoom;
     private bool isPanning;
 
-    private InputActions inputActions;
     private InputAction moveAction;
     private InputAction sprintAction;
 
-    private void OnEnable()
-    {
-        inputActions = new InputActions();
-        inputActions.Enable();
-
-        moveAction = inputActions.Player.Move;
-        sprintAction = inputActions.Player.Sprint;
-    }
 
     private void Start()
     {
+        moveAction = PlayerInput.Instance.InputActions.Player.Move;
+        sprintAction = PlayerInput.Instance.InputActions.Player.Sprint;
+
         targetPos = transform.position;
         baseLocalPos = zoomTransform.localPosition;
 
         targetZoom = 0f;
-    }
-
-    private void OnDisable()
-    {
-        inputActions.Disable();
     }
 
     private void Update()
@@ -81,12 +66,12 @@ public class CameraController : MonoBehaviour
 
     private void HandlePan()
     {
-        if (cam == null || Mouse.current == null)
+        if (Mouse.current == null)
             return;
 
         if (Mouse.current.middleButton.wasPressedThisFrame)
         {
-            isPanning = TryGetGroundPoint(out panOrigin);
+            isPanning = PlayerInput.Instance.TryGetGroundPoint(out panOrigin);
             panVelocity = Vector3.zero;
         }
         else if (Mouse.current.middleButton.wasReleasedThisFrame)
@@ -103,7 +88,7 @@ public class CameraController : MonoBehaviour
             return;
         }
 
-        if (TryGetGroundPoint(out Vector3 current))
+        if (PlayerInput.Instance.TryGetGroundPoint(out Vector3 current))
         {
             Vector3 offset = panOrigin - current;
             offset.y = 0f;
@@ -126,7 +111,7 @@ public class CameraController : MonoBehaviour
         if (zoomTransform == null || Mouse.current == null) 
             return;
 
-        bool hasBefore = TryGetGroundPoint(out Vector3 before);
+        bool hasBefore = PlayerInput.Instance.TryGetGroundPoint(out Vector3 before);
         float scroll = Mouse.current.scroll.ReadValue().y;
 
         if (Mathf.Abs(scroll) > 0.01f)
@@ -143,30 +128,12 @@ public class CameraController : MonoBehaviour
         // float currentZoom = Vector3.Dot(zoomTransform.localPosition - baseLocalPos, zoomAxis.normalized);
         // bool zoomingIn = targetZoom < currentZoom;
 
-        if (/*zoomingIn &&*/ hasBefore && TryGetGroundPoint(out Vector3 after))
+        if (/*zoomingIn &&*/ hasBefore && PlayerInput.Instance.TryGetGroundPoint(out Vector3 after))
         {
             Vector3 offset = before - after;
             offset.y = 0f;
             targetPos += offset;
             transform.position += offset;
         }
-    }
-
-    private bool TryGetGroundPoint(out Vector3 point)
-    {
-        point = default;
-        if (cam == null || Mouse.current == null)
-            return false;
-
-        Ray ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
-        Plane ground = new Plane(Vector3.up, new Vector3(0f, groundHeight, 0f));
-
-        if (ground.Raycast(ray, out float enter))
-        {
-            point = ray.GetPoint(enter);
-            return true;
-        }
-
-        return false;
     }
 }

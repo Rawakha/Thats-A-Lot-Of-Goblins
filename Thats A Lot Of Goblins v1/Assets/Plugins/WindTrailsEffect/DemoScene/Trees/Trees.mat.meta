@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c2048c0dde4a1c141bd473d9a14a44e3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 174417
+  packageName: Wind Trails Effect
+  packageVersion: 1.0
+  assetPath: Assets/WindTrailsEffect/DemoScene/Trees/Trees.mat
+  uploadId: 378249

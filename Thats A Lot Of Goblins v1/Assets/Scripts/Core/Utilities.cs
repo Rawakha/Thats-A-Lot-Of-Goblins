@@ -62,22 +62,20 @@ public static class Utilities
         return Mathf.RoundToInt(Mathf.Log(v, 2));
     }
 
-    public static void CreateInstance<T>(ref T instance, T newInstance) where T : UnityEngine.Object
+    public static bool CreateInstance<T>(ref T instance, T newInstance) where T : UnityEngine.Object
     {
         if (instance == null)
         {
             instance = newInstance;
-            return;
+            return true;
         }
 
-        if (instance != newInstance)
-        {
-            Debug.LogError(
-                $"Multiple instances of {typeof(T).Name} detected. " +
-                $"Existing: {instance.name}, New: {newInstance.name}",
-                newInstance
-            );
-        }
+        if (instance == newInstance)
+            return true; 
+
+        Debug.LogError($"Multiple instances of {typeof(T).Name} detected. " + $"Existing: {instance.name}, New: {newInstance.name}", newInstance);
+
+        return false;
     }
 
     public static bool IsInLayerMask(GameObject go, LayerMask mask)

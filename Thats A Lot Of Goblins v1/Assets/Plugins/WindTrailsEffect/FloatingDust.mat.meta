@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a1f573ca14c5ae3459bfaef0a32d694b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 174417
+  packageName: Wind Trails Effect
+  packageVersion: 1.0
+  assetPath: Assets/WindTrailsEffect/FloatingDust.mat
+  uploadId: 378249

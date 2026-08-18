@@ -55,16 +55,16 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FogDensity: 0.3
+    - _FogDensity: 0.5
     - _QueueControl: 0
     - _QueueOffset: 0
     - _RoomOffsetY: 0
     - _ShadeMinimum: 0
-    - _Tiling: 2
-    - _UseMainLight: 1
+    - _Tiling: 10
+    - _UseMainLight: 0
     m_Colors:
-    - _FogColor: {r: 0.11764706, g: 0.11764706, b: 0.11764706, a: 1}
-    - _LightDirection: {r: 0, g: 0, b: 0, a: 0}
-    - _RoomSize: {r: 4, g: 4, b: 4, a: 0}
+    - _FogColor: {r: 0.066037714, g: 0.066037714, b: 0.066037714, a: 1}
+    - _LightDirection: {r: 5, g: -5, b: 5, a: 0}
+    - _RoomSize: {r: 6.1, g: 6.1, b: 6, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

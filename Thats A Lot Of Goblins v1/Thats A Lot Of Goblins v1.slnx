@@ -29,6 +29,7 @@
   <Project Path="Unity.AI.MCP.Editor.csproj" />
   <Project Path="Unity.InferenceEngine.Editor.Visualizer.csproj" />
   <Project Path="Unity.VisualScripting.Flow.Editor.csproj" />
+  <Project Path="Unity.Recorder.Editor.csproj" />
   <Project Path="Unity.VisualStudio.Editor.csproj" />
   <Project Path="Unity.InferenceEngine.csproj" />
   <Project Path="Unity.AI.Mesh.csproj" />
@@ -77,6 +78,7 @@
   <Project Path="Unity.AI.Navigation.Editor.csproj" />
   <Project Path="Unity.AppUI.MVVM.csproj" />
   <Project Path="Unity.AI.Toolkit.GenerationObjectPicker.csproj" />
+  <Project Path="Unity.Recorder.csproj" />
   <Project Path="Unity.AI.Assistant.API.Editor.csproj" />
   <Project Path="Unity.Multiplayer.Center.Common.csproj" />
   <Project Path="Unity.AI.Generators.UI.AIDropdownIntegrations.csproj" />
@@ -99,6 +101,7 @@
   <Project Path="Unity.ShaderGraph.Utilities.csproj" />
   <Project Path="Unity.AI.Generators.Tools.csproj" />
   <Project Path="Unity.VisualScripting.Shared.Editor.csproj" />
+  <Project Path="Unity.Recorder.Base.csproj" />
   <Project Path="Unity.AppUI.Redux.Editor.csproj" />
   <Project Path="Unity.AI.Pbr.Srp.csproj" />
   <Project Path="Unity.AppUI.Undo.csproj" />
@@ -111,6 +114,7 @@
   <Project Path="Unity.AI.Assistant.Bridge.Editor.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Unity.AI.Toolkit.Compliance.csproj" />
+  <Project Path="Unity.Bindings.OpenImageIO.Editor.csproj" />
   <Project Path="Assembly-CSharp-Editor-firstpass.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.RenderPipelines.Core.Editor.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.004.csproj" />

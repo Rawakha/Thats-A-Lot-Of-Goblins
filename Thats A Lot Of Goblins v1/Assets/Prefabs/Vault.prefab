@@ -60,7 +60,7 @@ Transform:
   m_GameObject: {fileID: 4178237648281667809}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -97,7 +97,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 1.7
+  m_Radius: 3
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4215378681610829730
 GameObject:
@@ -111,7 +111,7 @@ GameObject:
   - component: {fileID: 9090288435872663202}
   - component: {fileID: 780748395788535451}
   m_Layer: 0
-  m_Name: Hole
+  m_Name: Fake Hole
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -126,8 +126,8 @@ Transform:
   m_GameObject: {fileID: 4215378681610829730}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071058, y: -0, z: -0, w: 0.7071078}
-  m_LocalPosition: {x: 0, y: 0.001, z: 0}
-  m_LocalScale: {x: 4, y: 4, z: 4}
+  m_LocalPosition: {x: 0, y: 4.001, z: -0.000010967255}
+  m_LocalScale: {x: 6.1, y: 6.1, z: 6.1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 7810281070326392037}

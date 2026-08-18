@@ -100,14 +100,11 @@ public class EnemyVariation : MonoBehaviour
 
     private void SetRendererScale(Enemy e)
     {
-        if (e.renderers == null || e.renderers.Length == 0)
+        if (e.renderer == null)
             return;
 
-        foreach (Renderer r in e.renderers)
-        {
-            float scaleMultiplier = Utilities.Random(rendererScaleRange);
-            r.transform.localScale *= scaleMultiplier;
-        }
+        float scaleMultiplier = Utilities.Random(rendererScaleRange);
+        e.renderer.transform.localScale *= scaleMultiplier;
     }
 
     private void SetMotion(Enemy e)
