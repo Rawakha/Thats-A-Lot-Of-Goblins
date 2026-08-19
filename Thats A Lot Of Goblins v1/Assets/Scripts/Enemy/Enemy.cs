@@ -39,11 +39,29 @@ public class Enemy : MonoBehaviour, IFlickable
         if (!isAlive)
             return;
 
-        isAlive = false;
+        // EffectDirector.Instance.Play(transform.position, Quaternion.identity);
 
         if (feedback != null)
-            feedback.StopFeedback();
+        {
+            feedback.PlayDeath(Despawn);
+        }
+        else
+        {
+            Despawn();
+        }
+    }
 
+    public void Despawn()
+    {
+        if (!isAlive)
+            return;
+
+        if (feedback != null)
+        {
+            feedback.StopFeedback();
+        }
+
+        isAlive = false;
         EnemyMover.Instance.Remove(this);
         EnemyPool.Instance.Return(this);
     }

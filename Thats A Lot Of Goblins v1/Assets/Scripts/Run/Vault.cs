@@ -8,6 +8,6 @@ public class Vault : MonoBehaviour
             return;
 
         RunManager.Instance.LoseLife();
-        e.Kill();
+        e.Despawn();
     }
 }
