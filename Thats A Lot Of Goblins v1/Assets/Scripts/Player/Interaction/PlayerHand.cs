@@ -71,7 +71,7 @@ public class PlayerHand : MonoBehaviour
 
                 Vector3 launchDirection = (awayDirection + Vector3.up * flickUpwardBias).normalized;
 
-                flickable.OnFlick(launchDirection, flickForce);
+                flickable.Flick(launchDirection, flickForce);
                 hasFlicked = true;
             }
         }

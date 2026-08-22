@@ -55,13 +55,29 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _DotDarkness: 1
+    - _DotDensity: 12
+    - _DotRadius: 0.5
+    - _DotSoftness: 0.36
+    - _FresnelPower: 3
+    - _FresnelStrength: 0
     - _Fresnel_Power: 1.5
+    - _HatchDarkness: 0.5
+    - _HatchDensity: 8
+    - _HatchSlant: 1
+    - _HatchWidth: 0.4
+    - _MottleScale: 40
+    - _MottleStrength: 0.2
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _TopStrength: 0
     m_Colors:
-    - _Back_Color: {r: 1, g: 0.8240767, b: 0.48627448, a: 1}
+    - _BackMultiplier: {r: 0.75, g: 0.9, b: 1.05, a: 1}
+    - _Back_Color: {r: 0, g: 0.85658014, b: 1, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Bottom_Tint: {r: 0.103773594, g: 0.103773594, b: 0.103773594, a: 1}
+    - _HatchLightDirection: {r: 0.29, g: 0.5, b: -0.22, a: 0}
+    - _TopMultiplier: {r: 1.08, g: 1.04, b: 0.9, a: 1}
     - _Top_Tint: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

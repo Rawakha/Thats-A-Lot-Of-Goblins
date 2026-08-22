@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyPool : GameManagerBase
+public class EnemyPool : MonoBehaviour
 {
     public static EnemyPool Instance;
 
-    [SerializeField] private Enemy enemyPrefab;
+    [SerializeField] private EnemyData enemyPrefab;
     [SerializeField] private int poolSize = 1000;
 
     [Header("Stats")]
@@ -14,20 +14,13 @@ public class EnemyPool : GameManagerBase
     [SerializeField, ReadOnly] private int inactiveEnemies = 0;
     [SerializeField, ReadOnly] private int peakActive = 0;
 
-    private EnemyVariation enemyVariation;
-    private Queue<Enemy> pool;
+    private Queue<EnemyData> pool;
 
-    protected override bool OnInitialize(GameLevelBootstrap levelBootstrap)
+    public bool Initialize(EnemyManager manager)
     {
         if (!Utilities.CreateInstance<EnemyPool>(ref Instance, this))
         {
             return false;
-        }
-
-        if (TryGetComponent<EnemyVariation>(out EnemyVariation variation))
-        {
-            enemyVariation = variation;
-            enemyVariation.Initialize();
         }
 
         CreatePool();
@@ -52,7 +45,10 @@ public class EnemyPool : GameManagerBase
 
     private void CreatePool()
     {
-        pool = new Queue<Enemy>(poolSize);
+        if (enemyPrefab == null)
+            return;
+
+        pool = new Queue<EnemyData>(poolSize);
 
         for (int i = 0; i < poolSize; i++)
         {
@@ -60,9 +56,9 @@ public class EnemyPool : GameManagerBase
         }
     }
 
-    public void Return(Enemy enemy)
+    public void Return(EnemyData enemy)
     {
-        if (enemy == null || enemy.inPool)
+        if (enemy == null)
             return;
 
         if (enemy.body != null)
@@ -71,36 +67,35 @@ public class EnemyPool : GameManagerBase
             enemy.body.angularVelocity = Vector3.zero;
         }
 
-        enemy.SetCollisionCallbacksEnabled(false);
         enemy.gameObject.SetActive(false);
-        enemy.inPool = true;
-
         pool.Enqueue(enemy);
     }
 
-    public Enemy Get(Vector3 position, Quaternion rotation)
+    public EnemyData Get(Vector3 position, Quaternion rotation)
     {
-        Enemy enemy = pool.Count > 0 ? pool.Dequeue() : SpawnNewEnemy();
+        EnemyData enemy = pool.Count > 0 ? pool.Dequeue() : SpawnNewEnemy();
 
-        enemy.ResetEnemy();
+        if (enemy == null || enemy.body == null) 
+            return null;
 
         enemy.facing = rotation;
+        enemy.body.interpolation = RigidbodyInterpolation.None;
+        enemy.body.position = position;
+        enemy.body.rotation = rotation;
         enemy.transform.SetPositionAndRotation(position, rotation);
         enemy.gameObject.SetActive(true);
+        enemy.body.interpolation = RigidbodyInterpolation.Interpolate;
 
         return enemy;
     }
 
-    private Enemy SpawnNewEnemy()
+    private EnemyData SpawnNewEnemy()
     {
         overallPoolSize++;
 
-        Enemy e = Instantiate(enemyPrefab, transform);
+        EnemyData e = Instantiate(enemyPrefab, transform);
 
-        if (enemyVariation != null)
-        {
-            enemyVariation.Apply(e);
-        }
+        e.OnCreated();
 
         return e;
     }

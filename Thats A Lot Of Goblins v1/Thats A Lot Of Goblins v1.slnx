@@ -1,7 +1,7 @@
 ﻿<Solution>
   <Project Path="Unity.AI.Sound.csproj" />
-  <Project Path="Unity.InputSystem.csproj" />
   <Project Path="Unity.VisualEffectGraph.Editor.csproj" />
+  <Project Path="Unity.InputSystem.csproj" />
   <Project Path="Unity.PlasticSCM.Editor.csproj" />
   <Project Path="Unity.AppUI.csproj" />
   <Project Path="Unity.ShaderGraph.Editor.csproj" />
@@ -99,6 +99,7 @@
   <Project Path="Unity.SurfaceCache.Runtime.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared.csproj" />
   <Project Path="Unity.AI.Navigation.csproj" />
+  <Project Path="Assembly-CSharp-Editor-firstpass.csproj" />
   <Project Path="Unity.CollabProxy.Editor.csproj" />
   <Project Path="Unity.PathTracing.Editor.csproj" />
   <Project Path="Unity.AI.Assistant.Bridge.Editor.csproj" />
@@ -135,7 +136,6 @@
   <Project Path="Unity.InputSystem.ForUI.Editor.csproj" />
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
   <Project Path="Unity.Bindings.OpenImageIO.Editor.csproj" />
-  <Project Path="Assembly-CSharp-Editor-firstpass.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Shaders.csproj" />
   <Project Path="Unity.InferenceEngine.MacBLAS.csproj" />
   <Project Path="Unity.InferenceEngine.ONNX.Editor.csproj" />

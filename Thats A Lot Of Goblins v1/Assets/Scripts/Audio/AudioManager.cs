@@ -19,12 +19,19 @@ public class AudioManager : GameManagerBase
     [SerializeField] private bool useDebugGizmos;
     [SerializeField] private float gizmoSize = 0.1f;
 
+    #region Private Fields
     private Queue<AudioSource> audioSources;
     private List<SoundRequest> soundRequests;
     private AudioSource preview;
 
     private Dictionary<AudioClip, AudioSource> playingSounds;
+    private Dictionary<int, TrackedSound> trackedSounds;
+    private List<TrackedSound> trackedList;
+    private int nextTrackedHandle = 1;
+    private int maxTrackedSounds = 10;
+    #endregion
 
+    #region Initialize
     private void Awake()
     {
         preview = gameObject.AddComponent<AudioSource>();
@@ -46,17 +53,14 @@ public class AudioManager : GameManagerBase
         }
 
         Instance = this;
+        trackedSounds = new Dictionary<int, TrackedSound>(16);
+        trackedList = new List<TrackedSound>(16);
         soundRequests = new List<SoundRequest>();
         playingSounds = new Dictionary<AudioClip, AudioSource>();
 
         InitializePool();
 
         return true;
-    }
-
-    private void Update()
-    {
-        ProcessSoundRequests();
     }
 
     private void InitializePool()
@@ -70,12 +74,20 @@ public class AudioManager : GameManagerBase
             audioSources.Enqueue(audioSource);
         }
     }
+    #endregion
 
+    private void Update()
+    {
+        ProcessSoundRequests();
+        UpdateTrackedSounds();
+    }
+
+    #region Sound Requesting
     public void RequestSound(AudioClip clip, Vector3 position, float priority = 0f, float volume = 1f, float pitchRange = 0f, float volumeRange = 0f, bool loopSound = false, bool additive = false)
     {
         if (clip == null || Vector3.Distance(position, listenerTransform.position) > maxDistance) return;
 
-        soundRequests.Add(new SoundRequest(clip, position, priority, loopSound, volume, pitchRange, volumeRange));
+        soundRequests.Add(new SoundRequest(clip, position, priority, loopSound, volume, pitchRange, volumeRange, additive));
     }
 
     public void RequestSound(SoundConfig soundConfig, Vector3 position, bool additive = false)
@@ -97,6 +109,20 @@ public class AudioManager : GameManagerBase
         soundRequests.Add(new SoundRequest(clip, position, soundConfig.priority, soundConfig.loopSound, soundConfig.volume, soundConfig.pitchRange, soundConfig.volumeRange, additive));
     }
 
+    public void StopSound(AudioClip clip)
+    {
+        if (playingSounds.ContainsKey(clip))
+        {
+            AudioSource audioSource = playingSounds[clip];
+            audioSource.Stop();
+            audioSource.gameObject.SetActive(false);
+            audioSources.Enqueue(audioSource);
+            playingSounds.Remove(clip);
+        }
+    }
+    #endregion
+
+    #region Sound Processing
     private void ProcessSoundRequests()
     {
         soundRequests.Sort((a, b) => b.priority.CompareTo(a.priority));
@@ -167,19 +193,105 @@ public class AudioManager : GameManagerBase
         if (trackInDictionary)
             playingSounds.Remove(clip);
     }
+    #endregion
 
-    public void StopSound(AudioClip clip)
+    #region Tracked Sounds
+    private void UpdateTrackedSounds()
     {
-        if (playingSounds.ContainsKey(clip))
+        for (int i = trackedList.Count - 1; i >= 0; i--)
         {
-            AudioSource audioSource = playingSounds[clip];
-            audioSource.Stop();
-            audioSource.gameObject.SetActive(false);
-            audioSources.Enqueue(audioSource);
-            playingSounds.Remove(clip);
+            TrackedSound tracked = trackedList[i];
+
+            if (tracked.follow == null || !tracked.source.isPlaying)
+            {
+                ReturnTracked(tracked);
+                continue;
+            }
+
+            tracked.source.transform.position = tracked.follow.position;
         }
     }
 
+    public int RequestTracked(SoundConfig config, Transform follow)
+    {
+        if (config == null || follow == null)
+            return 0;
+
+        if (trackedList.Count >= maxTrackedSounds)
+            return 0;
+
+        if (audioSources.Count == 0)
+            return 0;
+
+        AudioClip clip = config.audioClips.Length > 0 ? config.audioClips[Utilities.Random(config.audioClips.Length)] : null;
+
+        if (clip == null)
+            return 0;
+
+        Vector3 pos = transform.position;
+        Vector3 toListener = pos - listenerTransform.position;
+        if (toListener.sqrMagnitude > maxDistance * maxDistance)
+            return 0;
+
+        AudioSource source = audioSources.Dequeue();
+        source.transform.position = pos;
+        source.clip = clip;
+        source.loop = config.loopSound;
+        source.pitch = 1f + Random.Range(-config.pitchRange, config.pitchRange);
+
+        float volume = Mathf.Clamp01(config.volume + Random.Range(-config.volumeRange, config.volumeRange));
+        source.volume = volume;
+        source.gameObject.SetActive(true);
+        source.Play();
+
+        TrackedSound tracked = new TrackedSound
+        {
+            handle = nextTrackedHandle++,
+            source = source,
+            follow = follow,
+            baseVolume = volume
+        };
+
+        trackedSounds[tracked.handle] = tracked;
+        trackedList.Add(tracked);
+
+        return tracked.handle;
+    }
+
+    public void SetTrackedVolume(int handle, float normalized)
+    {
+        if (handle == 0)
+            return;
+
+        if (trackedSounds.TryGetValue(handle, out TrackedSound tracked))
+        {
+            tracked.source.volume = tracked.baseVolume * Mathf.Clamp01(normalized);
+        }
+    }
+
+    public void StopTracked(int handle)
+    {
+        if (handle == 0)
+            return;
+
+        if (!trackedSounds.TryGetValue(handle, out TrackedSound tracked))
+            return;
+
+        ReturnTracked(tracked);
+    }
+
+    private void ReturnTracked(TrackedSound tracked)
+    {
+        tracked.source.Stop();
+        tracked.source.gameObject.SetActive(false);
+        audioSources.Enqueue(tracked.source);
+
+        trackedSounds.Remove(tracked.handle);
+        trackedList.Remove(tracked);
+    }
+    #endregion
+
+    #region Classes
     private class SoundRequest
     {
         public AudioClip audioClip;
@@ -204,6 +316,17 @@ public class AudioManager : GameManagerBase
         }
     }
 
+    private class TrackedSound
+    {
+        public int handle;
+        public AudioSource source;
+        public Transform follow;
+        public float baseVolume;
+    }
+    #endregion
+
+    #region Editor
+#if UNITY_EDITOR
     public void Preview(AudioClip clip, float volume, bool loop, float priority, float pitchVar, float volumeVar)
     {
         if (!clip) return;
@@ -236,4 +359,6 @@ public class AudioManager : GameManagerBase
             Gizmos.DrawWireSphere(listenerTransform.position, maxDistance);
         }
     }
+#endif
+#endregion
 }

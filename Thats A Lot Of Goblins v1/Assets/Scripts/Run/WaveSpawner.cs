@@ -8,15 +8,16 @@ public class WaveSpawner : MonoBehaviour
     [SerializeField] private Transform[] spawnPoints;
     [SerializeField] private float spawnDelay = 0.1f;
     [SerializeField] private int maxSpawnsPerFrame = 100;
+    [SerializeField] private float maxBacklogSeconds = 1f;
 
-    private EnemyPool enemyPool;
+    private EnemyManager enemyManager;
     private float spawnTimer;
     private int spawnPointIndex;
 
     private void Start()
     {
-        enemyPool = EnemyPool.Instance;
-        if (enemyPool == null)
+        enemyManager = EnemyManager.Instance;
+        if (enemyManager == null)
             enabled = false;
 
         spawnPointIndex = 0;
@@ -30,11 +31,14 @@ public class WaveSpawner : MonoBehaviour
         if (spawnPoints == null || spawnPoints.Length == 0)
             return;
 
-        spawnTimer += Time.deltaTime;
+        spawnTimer = Mathf.Min(spawnTimer + Time.deltaTime, maxBacklogSeconds);
 
         int spawns = 0;
         while (spawnTimer >= spawnDelay && spawns < maxSpawnsPerFrame)
         {
+            if (!enemyManager.CanSpawn)
+                break;
+
             spawnTimer -= spawnDelay;
             SpawnEnemy();
             spawns++;
@@ -44,13 +48,7 @@ public class WaveSpawner : MonoBehaviour
     private void SpawnEnemy()
     {
         Transform spawnPoint = spawnPoints[spawnPointIndex];
-        Enemy e = enemyPool.Get(spawnPoint.position, spawnPoint.rotation);
-
-        if (EnemyMover.Instance != null)
-        {
-            EnemyMover.Instance.Add(e);
-        }
-
+        EnemyData e = enemyManager.Spawn(spawnPoint.position, spawnPoint.rotation);
         spawnPointIndex = (spawnPointIndex + 1) % spawnPoints.Length;
     }
 

@@ -5,10 +5,10 @@ public class EnemyVariation : MonoBehaviour
 {
     [Header("Scale")]
     [SerializeField] private Vector2 scaleRange = new(0.9f, 1.2f);
-    [SerializeField] private Vector2 rendererScaleRange = new(0.9f, 1.1f);
 
     [Header("Motion")]
     [SerializeField] private Vector2 speedMultiplierRange = new(0.8f, 1.2f);
+    [SerializeField] private Vector2 bobSpeedMultiplierRange = new(0.8f, 1.2f);
     [SerializeField] private float maxJitterDegrees = 5f;
 
     [Header("Color")]
@@ -25,7 +25,10 @@ public class EnemyVariation : MonoBehaviour
 
     private void OnDestroy()
     {
-        for (int i = 0; i < meshVariantCount; i++)
+        if (meshVariants == null || meshVariants.Length == 0) 
+            return;
+
+        for (int i = 0; i < meshVariants.Length; i++)
         {
             if (meshVariants[i] != null) Destroy(meshVariants[i]);
         }
@@ -36,18 +39,17 @@ public class EnemyVariation : MonoBehaviour
         BuildMeshVariants();
     }
 
-    public void Apply(Enemy e)
+    public void Apply(EnemyData e)
     {
         if (e == null)
             return;
 
         ApplyMeshTint(e);
         SetScale(e);
-        SetRendererScale(e);
         SetMotion(e);
     }
 
-    public void ApplyMeshTint(Enemy e)
+    public void ApplyMeshTint(EnemyData e)
     {
         int v = Random.Range(0, meshVariantCount);
         e.meshFilter.sharedMesh = meshVariants[v];
@@ -92,22 +94,15 @@ public class EnemyVariation : MonoBehaviour
         return m;
     }
 
-    private void SetScale(Enemy e)
+    private void SetScale(EnemyData e)
     {
         float scaleMultiplier = Utilities.Random(scaleRange);
         e.transform.localScale *= scaleMultiplier;
+
+        // Store the visuals base scale
+        e.visualBaseScale = e.visual.localScale;
     }
-
-    private void SetRendererScale(Enemy e)
-    {
-        if (e.renderer == null)
-            return;
-
-        float scaleMultiplier = Utilities.Random(rendererScaleRange);
-        e.renderer.transform.localScale *= scaleMultiplier;
-    }
-
-    private void SetMotion(Enemy e)
+    private void SetMotion(EnemyData e)
     {
         e.speedMultiplier = Utilities.Random(speedMultiplierRange);
 
@@ -116,6 +111,6 @@ public class EnemyVariation : MonoBehaviour
         e.steerSin = Mathf.Sin(angle);
 
         e.bobPhase = Random.Range(0f, Mathf.PI * 2f);
-        e.bobSpeedMul = Random.Range(0.8f, 1.2f);
+        e.bobSpeedMul = Utilities.Random(bobSpeedMultiplierRange);
     }
 }
