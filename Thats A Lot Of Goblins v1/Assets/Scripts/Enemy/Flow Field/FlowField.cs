@@ -15,6 +15,7 @@ public class FlowField : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool drawGrid = true;
+    [SerializeField] private bool drawCost = false;
     [SerializeField] private bool drawIntegration = false;
     [SerializeField] private bool drawCostHandles = false;
     [SerializeField] private bool drawDirections = false;
@@ -324,6 +325,9 @@ public class FlowField : MonoBehaviour
 
     private void DrawCost()
     {
+        if (!drawCost)
+            return;
+
         if (cost != null && costData != null)
         {
             for (int i = 0; i < cost.Length; i++)

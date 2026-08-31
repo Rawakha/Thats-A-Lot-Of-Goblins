@@ -4,7 +4,7 @@ public class Vault : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.TryGetComponent(out EnemyData e))
+        if (!other.TryGetComponent(out Enemy e))
             return;
 
         if (e.state != EnemyState.Walking && e.state != EnemyState.Airborne)

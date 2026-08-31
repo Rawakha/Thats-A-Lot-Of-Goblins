@@ -7,7 +7,7 @@ public class EnemyMover : MonoBehaviour
     public static EnemyMover Instance;
 
     [SerializeField] private FlowField flowField;
-    [SerializeField] private List<EnemyData> enemies = new();
+    [SerializeField] private List<Enemy> enemies = new();
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 3f;
@@ -43,7 +43,7 @@ public class EnemyMover : MonoBehaviour
 
         for (int i = 0; i < enemies.Count; i++)
         {
-            EnemyData e = enemies[i];
+            Enemy e = enemies[i];
 
             if (e == null || e.body == null) 
                 continue;
@@ -96,7 +96,7 @@ public class EnemyMover : MonoBehaviour
         epsilonSqr = eps * eps;
     }
 
-    public void Add(EnemyData enemy)
+    public void Add(Enemy enemy)
     {
         if (enemy == null || enemy.inMover)
             return;
@@ -106,7 +106,7 @@ public class EnemyMover : MonoBehaviour
         enemy.moverIndex = enemies.Count - 1;
     }
 
-    public void Remove(EnemyData enemy)
+    public void Remove(Enemy enemy)
     {
         if (enemy == null || !enemy.inMover)
             return;

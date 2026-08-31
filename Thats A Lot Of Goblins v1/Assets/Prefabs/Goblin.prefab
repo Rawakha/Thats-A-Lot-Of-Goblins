@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7021780079457184482}
   - component: {fileID: 4528643267031867480}
   - component: {fileID: 5663800193660276175}
-  - component: {fileID: 2763684930708686165}
+  - component: {fileID: 3769730967873668083}
   m_Layer: 6
   m_Name: Goblin
   m_TagString: Untagged
@@ -85,7 +85,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
---- !u!114 &2763684930708686165
+--- !u!114 &3769730967873668083
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,22 +94,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 5593938593134805886}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a818840070b4f314c8f211b1f772ac12, type: 3}
+  m_Script: {fileID: 11500000, guid: ae53b70eeb0efbf4fb32042578f253fc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  m_EditorClassIdentifier: Assembly-CSharp::Enemy
   body: {fileID: 5663800193660276175}
   collider: {fileID: 4528643267031867480}
   visual: {fileID: 2395294427901557244}
   meshFilter: {fileID: 2657143585568271284}
   renderer: {fileID: 13282857322802640}
   maxFlickDuration: 2
-  flickTorqueMultiplier: 0.25
+  flickTorqueMultiplier: 0.1
+  maxHealth: 50
+  currentHealth: 0
   state: 0
   inMover: 0
   inAnimator: 0
   inFeedback: 0
+  masterIndex: -1
   moverIndex: -1
   animatorIndex: -1
+  damageIndex: -1
   feedbackIndex: -1
   airborneIndex: -1
   screamHandle: 0

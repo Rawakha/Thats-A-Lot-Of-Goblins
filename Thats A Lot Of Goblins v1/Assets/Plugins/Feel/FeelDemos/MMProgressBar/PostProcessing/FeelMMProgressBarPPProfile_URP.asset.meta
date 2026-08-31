@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a7018f6c622944248974c76b04c26d1f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 183370
+  packageName: Feel
+  packageVersion: 6.0
+  assetPath: Assets/Feel/FeelDemos/MMProgressBar/PostProcessing/FeelMMProgressBarPPProfile_URP.asset
+  uploadId: 955926

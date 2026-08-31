@@ -5,7 +5,7 @@ public class EnemyPool : MonoBehaviour
 {
     public static EnemyPool Instance;
 
-    [SerializeField] private EnemyData enemyPrefab;
+    [SerializeField] private Enemy enemyPrefab;
     [SerializeField] private int poolSize = 1000;
 
     [Header("Stats")]
@@ -14,7 +14,7 @@ public class EnemyPool : MonoBehaviour
     [SerializeField, ReadOnly] private int inactiveEnemies = 0;
     [SerializeField, ReadOnly] private int peakActive = 0;
 
-    private Queue<EnemyData> pool;
+    private Queue<Enemy> pool;
 
     public bool Initialize(EnemyManager manager)
     {
@@ -48,7 +48,7 @@ public class EnemyPool : MonoBehaviour
         if (enemyPrefab == null)
             return;
 
-        pool = new Queue<EnemyData>(poolSize);
+        pool = new Queue<Enemy>(poolSize);
 
         for (int i = 0; i < poolSize; i++)
         {
@@ -56,7 +56,7 @@ public class EnemyPool : MonoBehaviour
         }
     }
 
-    public void Return(EnemyData enemy)
+    public void Return(Enemy enemy)
     {
         if (enemy == null)
             return;
@@ -71,9 +71,9 @@ public class EnemyPool : MonoBehaviour
         pool.Enqueue(enemy);
     }
 
-    public EnemyData Get(Vector3 position, Quaternion rotation)
+    public Enemy Get(Vector3 position, Quaternion rotation)
     {
-        EnemyData enemy = pool.Count > 0 ? pool.Dequeue() : SpawnNewEnemy();
+        Enemy enemy = pool.Count > 0 ? pool.Dequeue() : SpawnNewEnemy();
 
         if (enemy == null || enemy.body == null) 
             return null;
@@ -89,11 +89,11 @@ public class EnemyPool : MonoBehaviour
         return enemy;
     }
 
-    private EnemyData SpawnNewEnemy()
+    private Enemy SpawnNewEnemy()
     {
         overallPoolSize++;
 
-        EnemyData e = Instantiate(enemyPrefab, transform);
+        Enemy e = Instantiate(enemyPrefab, transform);
 
         e.OnCreated();
 

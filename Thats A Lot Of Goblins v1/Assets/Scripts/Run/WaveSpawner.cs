@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class WaveSpawner : MonoBehaviour
@@ -5,67 +6,63 @@ public class WaveSpawner : MonoBehaviour
     [SerializeField] private bool active = false;
 
     [Header("Spawn Settings")]
-    [SerializeField] private Transform[] spawnPoints;
-    [SerializeField] private float spawnDelay = 0.1f;
+    [SerializeField] private Transform spawnPoint;
     [SerializeField] private int maxSpawnsPerFrame = 100;
     [SerializeField] private float maxBacklogSeconds = 1f;
 
-    private EnemyManager enemyManager;
+    [Header("Wave Spawner Settings")]
+    [SerializeField, ReadOnly] private int spawnCount = 0;
+    [SerializeField, ReadOnly] private float spawnDelay = 0f;
+
     private float spawnTimer;
-    private int spawnPointIndex;
 
-    private void Start()
-    {
-        enemyManager = EnemyManager.Instance;
-        if (enemyManager == null)
-            enabled = false;
+    private Transform SpawnPoint => spawnPoint != null ? spawnPoint : transform;
 
-        spawnPointIndex = 0;
-    }
+    public event Action<WaveSpawner> OnSpawningComplete;
 
     private void Update()
     {
-        if (!active)
+        if (spawnPoint == null)
             return;
 
-        if (spawnPoints == null || spawnPoints.Length == 0)
+        if (!active || spawnCount <= 0)
             return;
 
+        EnemyManager enemyManager = EnemyManager.Instance;
         spawnTimer = Mathf.Min(spawnTimer + Time.deltaTime, maxBacklogSeconds);
+        int spawnsThisFrame = 0;
 
-        int spawns = 0;
-        while (spawnTimer >= spawnDelay && spawns < maxSpawnsPerFrame)
+        while (spawnTimer >= spawnDelay && spawnsThisFrame < maxSpawnsPerFrame)
         {
             if (!enemyManager.CanSpawn)
                 break;
 
             spawnTimer -= spawnDelay;
-            SpawnEnemy();
-            spawns++;
+            enemyManager.Spawn(SpawnPoint.position, spawnPoint.rotation);
+            spawnCount--;
+            spawnsThisFrame++;
+
+            if (spawnCount <= 0)
+            {
+                active = false;
+                spawnCount = 0;
+                OnSpawningComplete?.Invoke(this);
+                break;
+            }
         }
     }
 
-    private void SpawnEnemy()
+    public void BeginSpawning(int count,  float spawnDelay)
     {
-        Transform spawnPoint = spawnPoints[spawnPointIndex];
-        EnemyData e = enemyManager.Spawn(spawnPoint.position, spawnPoint.rotation);
-        spawnPointIndex = (spawnPointIndex + 1) % spawnPoints.Length;
+        this.spawnCount = count;
+        this.spawnDelay = spawnDelay;
+
+        active = true;
     }
 
-    public void SetActive(bool t)
+    public void ForceStopSpawning()
     {
-        active = t;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (spawnPoints == null || spawnPoints.Length == 0)
-            return;
-
-        foreach (var s in spawnPoints)
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(s.position, 0.5f);
-        }
+        active = false;
+        spawnCount = 0;
     }
 }

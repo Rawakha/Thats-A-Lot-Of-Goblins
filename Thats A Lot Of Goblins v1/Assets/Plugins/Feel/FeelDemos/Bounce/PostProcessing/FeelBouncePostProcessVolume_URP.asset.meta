@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4523b7e94e37a7242b5c4e7c975ba091
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 183370
+  packageName: Feel
+  packageVersion: 6.0
+  assetPath: Assets/Feel/FeelDemos/Bounce/PostProcessing/FeelBouncePostProcessVolume_URP.asset
+  uploadId: 955926

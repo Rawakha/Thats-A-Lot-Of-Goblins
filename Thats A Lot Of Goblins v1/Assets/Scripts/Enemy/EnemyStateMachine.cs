@@ -1,18 +1,20 @@
 using UnityEngine;
+using static EnemyFeelManager;
 
 public static class EnemyStateMachine
 {
-    public static void Set(EnemyData e, EnemyState next)
+    public static void Set(Enemy e, EnemyState next)
     {
         if (e == null || e.state == next)
             return;
 
-        Exit(e, e.state);
+        EnemyState previous = e.state;
+        Exit(e, previous);
         e.state = next;
-        Enter(e, next);
+        Enter(e, next, previous);
     }
 
-    private static void Enter(EnemyData e, EnemyState s)
+    private static void Enter(Enemy e, EnemyState s, EnemyState previous)
     {
         if (e == null)
             return;
@@ -33,10 +35,17 @@ public static class EnemyStateMachine
 
             case EnemyState.Dying:
                 EnemyMover.Instance.Remove(e);
-                EnemyFeelManager.Instance.Add(e, EnemyFeelManager.FeelType.Death, () =>
+                if (previous == EnemyState.Airborne) 
                 {
-                    Set(e, EnemyState.Pooled);
-                });
+                    Debug.Log("Airborne Death");
+
+                    EnemyFeelManager.Instance.Add(e, FeelType.Death, () => Set(e, EnemyState.Pooled));
+                }
+                else
+                {
+                    EnemyFeelManager.Instance.Add(e, FeelType.Hit);
+                    EnemyDeathManager.Instance.Add(e);
+                }
                 break;
 
             case EnemyState.Pooled:
@@ -45,7 +54,7 @@ public static class EnemyStateMachine
         }
     }
 
-    private static void Exit(EnemyData e, EnemyState s)
+    private static void Exit(Enemy e, EnemyState s)
     {
         if (e == null)
             return;
@@ -62,11 +71,12 @@ public static class EnemyStateMachine
 
             case EnemyState.Dying:
                 EnemyFeelManager.Instance.Remove(e);
+                EnemyDeathManager.Instance.Remove(e);
                 break;
         }
     }
 
-    public static void Launch(EnemyData e, Vector3 direction, float force)
+    public static void Launch(Enemy e, Vector3 direction, float force)
     {
         if (e == null || e.state != EnemyState.Walking)
             return;

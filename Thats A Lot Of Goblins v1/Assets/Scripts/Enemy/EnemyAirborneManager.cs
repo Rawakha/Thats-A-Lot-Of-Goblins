@@ -17,15 +17,30 @@ public class EnemyAirborneManager : MonoBehaviour
     [SerializeField] private float maxHeight = 6f;
     [SerializeField] private float minVolume = 0.1f;
 
+    [Header("Scream Particles")]
+    [SerializeField] private ParticleSystem screamParticlePrefab;
+    [SerializeField, Min(1)] private int maxScreamParticles = 12;
+    [SerializeField] private Vector3 mouthLocalPosition = new Vector3(0.016f, 0.88f, 0.33f);
+    [SerializeField] private Vector3 mouthLocalRotation = new Vector3(-30f, 0f, 0f);
+
     private static bool subscribed = false;
 
+    private readonly Stack<ParticleSystem> availableParticles = new();
+    private readonly List<ParticleSystem> createdParticles = new();
+    private readonly List<ActiveParticle> activeParticles = new();
     private readonly List<Airborne> airborne = new List<Airborne>(256);
-    private readonly Dictionary<EntityId, EnemyData> contactEnemies = new Dictionary<EntityId, EnemyData>(256);
+    private readonly Dictionary<EntityId, Enemy> contactEnemies = new Dictionary<EntityId, Enemy>(256);
 
     private struct Airborne
     {
-        public EnemyData enemy;
+        public Enemy enemy;
         public float startTime;
+    }
+
+    private struct ActiveParticle
+    {
+        public Enemy enemy;
+        public ParticleSystem particle;
     }
 
     public bool Initialize(EnemyManager manager)
@@ -69,7 +84,7 @@ public class EnemyAirborneManager : MonoBehaviour
         for (int i = airborne.Count - 1; i >= 0; i--)
         {
             Airborne a = airborne[i];
-            EnemyData e = a.enemy;
+            Enemy e = a.enemy;
 
             if (e == null || e.body == null)
             {
@@ -88,6 +103,7 @@ public class EnemyAirborneManager : MonoBehaviour
             if (speedSqr < minScreamSpeed * minScreamSpeed)
             {
                 StopScream(e);
+                ReturnScreamParticle(e);
                 continue;
             }
 
@@ -104,7 +120,7 @@ public class EnemyAirborneManager : MonoBehaviour
 
     #region Scream
 
-    private void StartScream(EnemyData e)
+    private void StartScream(Enemy e)
     {
         if (e == null || e.body == null)
             return;
@@ -116,13 +132,86 @@ public class EnemyAirborneManager : MonoBehaviour
         e.screamHandle = handle;
     }
 
-    private void StopScream(EnemyData e)
+    private void StopScream(Enemy e)
     {
         if (e == null || e.screamHandle == 0)
             return;
 
         AudioManager.Instance.StopTracked(e.screamHandle);
         e.screamHandle = 0;
+    }
+
+    private bool TryGetScreamParticle(Enemy e, out ParticleSystem particle)
+    {
+        particle = null;
+
+        if (e == null || maxScreamParticles <= 0)
+            return false;
+
+        for (int i = 0; i < activeParticles.Count; i++)
+        {
+            if (activeParticles[i].enemy == e)
+            {
+                particle = activeParticles[i].particle;
+                return true;
+            }
+        }
+
+        if (availableParticles.Count > 0)                       // Pool available, take
+        {
+            particle = availableParticles.Pop();
+        }
+        else if (createdParticles.Count < maxScreamParticles)   // Pool not full create a new one
+        {
+            particle = Instantiate(screamParticlePrefab, transform);
+            createdParticles.Add(particle);
+        }
+        else                                                    // Pool full take oldest one
+        {
+            ActiveParticle oldest = activeParticles[0];
+            particle = oldest.particle;
+
+            activeParticles.RemoveAt(0);
+            particle.Stop();
+        }
+
+        particle.transform.SetParent(e.transform, false);
+        particle.transform.localPosition = mouthLocalPosition;
+        particle.transform.localRotation = Quaternion.Euler(mouthLocalRotation);
+
+        particle.gameObject.SetActive(true);
+        particle.Play();
+
+        activeParticles.Add(new ActiveParticle
+        {
+            enemy = e,
+            particle = particle
+        });
+
+        return true;
+    }
+
+    private void ReturnScreamParticle(Enemy e)
+    {
+        if (e == null)
+            return;
+
+        for (int i = 0; i < activeParticles.Count; i++)
+        {
+            if (activeParticles[i].enemy != e)
+                continue;
+
+            ParticleSystem particle = activeParticles[i].particle;
+            particle.Stop();
+
+            particle.transform.SetParent(transform, false);
+            particle.gameObject.SetActive(false);
+
+            availableParticles.Push(particle);
+            activeParticles.RemoveAt(i);
+
+            return;
+        }
     }
 
     #endregion
@@ -134,7 +223,7 @@ public class EnemyAirborneManager : MonoBehaviour
         {
             ContactPairHeader header = headerArray[i];
 
-            if (!TryGetContactEnemy(header, out EnemyData enemy))
+            if (!TryGetContactEnemy(header, out Enemy enemy))
                 continue;
 
             for (int j = 0; j < header.pairCount; j++)
@@ -154,7 +243,7 @@ public class EnemyAirborneManager : MonoBehaviour
         }
     }
 
-    private bool TryGetContactEnemy(ContactPairHeader header, out EnemyData enemy)
+    private bool TryGetContactEnemy(ContactPairHeader header, out Enemy enemy)
     {
         if (contactEnemies.TryGetValue(header.bodyEntityId, out enemy))
             return true;
@@ -172,44 +261,45 @@ public class EnemyAirborneManager : MonoBehaviour
     }
     #endregion
 
-    public void Add(EnemyData enemy, float launchSpeed)
+    public void Add(Enemy e, float launchSpeed)
     {
-        if (enemy == null || enemy.airborneIndex >= 0)
+        if (e == null || e.airborneIndex >= 0)
             return;
 
         airborne.Add(new Airborne
         {
-            enemy = enemy,
+            enemy = e,
             startTime = Time.time
         });
 
-        if (enemy.collider != null)
+        if (e.collider != null)
         {
-            enemy.collider.providesContacts = true;
-            contactEnemies[enemy.body.GetEntityId()] = enemy;
+            e.collider.providesContacts = true;
+            contactEnemies[e.body.GetEntityId()] = e;
         }
 
         if (launchSpeed >= minScreamSpeed)
         {
-            StartScream(enemy);
+            StartScream(e);
+            TryGetScreamParticle(e, out _);
         }
 
-        enemy.airborneIndex = airborne.Count - 1;
+        e.airborneIndex = airborne.Count - 1;
     }
 
-    public void Remove(EnemyData enemy)
+    public void Remove(Enemy e)
     {
-        if (enemy == null || enemy.airborneIndex < 0)
+        if (e == null || e.airborneIndex < 0)
             return;
 
-        int idx = enemy.airborneIndex;
+        int idx = e.airborneIndex;
 
-        if (idx >= airborne.Count || airborne[idx].enemy != enemy)
+        if (idx >= airborne.Count || airborne[idx].enemy != e)
         {
-            Debug.LogError($"EnemyAirborneManager: stale airborneIndex on {enemy.name}", enemy);
+            Debug.LogError($"EnemyAirborneManager: stale airborneIndex on {e.name}", e);
             for (int i = 0; i < airborne.Count; i++)
             {
-                if (airborne[i].enemy == enemy) 
+                if (airborne[i].enemy == e) 
                 { 
                     idx = i; break; 
                 }
@@ -217,19 +307,20 @@ public class EnemyAirborneManager : MonoBehaviour
         }
 
         RemoveAtSwap(idx);
-        Cleanup(enemy);
+        Cleanup(e);
     }
 
-    private void Cleanup(EnemyData enemy)
+    private void Cleanup(Enemy e)
     {
-        if (enemy.collider != null)
+        if (e.collider != null)
         {
-            enemy.collider.providesContacts = false;
+            e.collider.providesContacts = false;
         }
 
-        contactEnemies.Remove(enemy.body.GetEntityId());
-        StopScream(enemy);
-        enemy.airborneIndex = -1;
+        contactEnemies.Remove(e.body.GetEntityId());
+        StopScream(e);
+        ReturnScreamParticle(e);
+        e.airborneIndex = -1;
     }
 
     private void RemoveAtSwap(int index)

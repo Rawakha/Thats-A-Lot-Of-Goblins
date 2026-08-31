@@ -1,34 +1,88 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
+[DefaultExecutionOrder(Utilities.ExecutionOrder.Singletons)]
 public class WaveManager : MonoBehaviour
 {
-    [Header("Spawners")]
+    public static WaveManager Instance;
+
+    [Header("Waves")]
     [SerializeField] private WaveSpawner[] spawners;
+    [SerializeField] private WaveDefinition[] waveDefinitions;
 
-    public void StartWaves()
+    public WaveDefinition CurrentWaveDefinition { get; private set; }
+    public int SpawnersRemaining { get; private set; }
+    public int EnemiesRemaining { get; private set; }
+
+    private void Awake()
     {
-        SetSpawners(true);
+        Utilities.CreateInstance(ref Instance, this);
     }
 
-    public void StopWaves()
+    public void BeginWave(int index)
     {
-        SetSpawners(false);
-    }
-
-    private void SetSpawners(bool t)
-    {
-        if (spawners == null || spawners.Length == 0)
-            return;
+        WaveDefinition w = waveDefinitions[index];
+        WaveSpawner[] spawners = GetSpawners(w.spawnPointCount);
+        int enemiesPerSpawner = w.totalEnemies / w.spawnPointCount;
 
         foreach (var s in spawners)
         {
-            s.SetActive(t);
+            s.BeginSpawning(enemiesPerSpawner, w.spawnDelay);
+            s.OnSpawningComplete += OnSpawnerComplete;
+        }
+
+        CurrentWaveDefinition = w;
+        SpawnersRemaining = w.spawnPointCount;
+        EnemiesRemaining = w.totalEnemies;
+
+        RunManagerUI.Instance.SetEnemies(w.totalEnemies);
+    }
+
+    public void StopSpawning()
+    {
+        foreach (WaveSpawner s in spawners)
+        {
+            s.ForceStopSpawning();
         }
     }
 
-    [InspectorButton]
-    public void GetSpawners()
+    private void OnSpawnerComplete(WaveSpawner spawner)
     {
-        spawners = FindObjectsByType<WaveSpawner>();
+        if (spawner == null)
+            return;
+
+        SpawnersRemaining--;
+
+        // Spawning is done we can now transition to clearing
+        if (SpawnersRemaining <= 0)
+        {
+            RunManager.Instance.SetPhase(RunManager.RunPhase.Clearing);
+        }
+
+        // Unsubscribe from event
+        spawner.OnSpawningComplete -= OnSpawnerComplete;
+    }
+
+    private WaveSpawner[] GetSpawners(int count)
+    {
+        List<WaveSpawner> availableSpawners = spawners.ToList();
+        WaveSpawner[] chosenSpawners = new WaveSpawner[count];
+        
+        for (int i = 0; i < count; i++)
+        {
+            WaveSpawner spawner = Utilities.Random(availableSpawners);
+            chosenSpawners[i] = spawner;
+
+            availableSpawners.Remove(spawner);
+        }
+
+        return chosenSpawners;
+    }
+
+    public void NotifyEnemyRemoved()
+    {
+        EnemiesRemaining--;
+        RunManagerUI.Instance.SetEnemies(EnemiesRemaining);
     }
 }

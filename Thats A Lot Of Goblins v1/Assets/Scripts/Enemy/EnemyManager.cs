@@ -12,9 +12,11 @@ public class EnemyManager : GameManagerBase
     [SerializeField] private EnemyAnimator animator;
     [SerializeField] private EnemyAirborneManager airborneManager;
     [SerializeField] private EnemyFeelManager feelManager;
+    [SerializeField] private EnemyGrid grid;
+    [SerializeField, ReadOnly] private int frameCounter;
 
     [Header("Enemy Tracking")]
-    [SerializeField] private List<EnemyData> activeEnemies = new List<EnemyData>();
+    [SerializeField] private List<Enemy> activeEnemies = new List<Enemy>();
     [SerializeField] private int maxActiveEnemies = 1000;
     [SerializeField] private int resumeThreshold = 900;
 
@@ -25,7 +27,7 @@ public class EnemyManager : GameManagerBase
     #region Initialization
     protected override bool OnInitialize(GameLevelBootstrap levelBootstrap)
     {
-        if (!audioManager || !variation || !pool || !animator || !airborneManager || !feelManager)
+        if (!audioManager || !variation || !pool || !animator || !airborneManager || !feelManager || !grid)
         {
             Debug.LogError("EnemyManager: Missing components", this); 
             return false;
@@ -37,6 +39,9 @@ public class EnemyManager : GameManagerBase
         variation.Initialize();
         airborneManager.Initialize(this);
         pool.Initialize(this);
+        grid.Initialize(this);
+
+        frameCounter = 0;
 
         return true;
     }
@@ -50,12 +55,24 @@ public class EnemyManager : GameManagerBase
         animator = GetComponentInChildren<EnemyAnimator>();
         airborneManager = GetComponentInChildren<EnemyAirborneManager>();
         feelManager = GetComponentInChildren<EnemyFeelManager>();
+        grid = GetComponentInChildren<EnemyGrid>();
     }
     #endregion
 
-    public EnemyData Spawn(Vector3 position, Quaternion rotation)
+    public void LateUpdate()
     {
-        EnemyData e = pool.Get(position, rotation);
+        frameCounter++;
+
+        if (frameCounter >= grid.RebuildInterval)
+        {
+            frameCounter = 0;
+            grid.Rebuild(activeEnemies);
+        }
+    }
+
+    public Enemy Spawn(Vector3 position, Quaternion rotation)
+    {
+        Enemy e = pool.Get(position, rotation);
         if (e == null)
             return null;
 
@@ -69,7 +86,7 @@ public class EnemyManager : GameManagerBase
         return e;
     }
 
-    public void Despawn(EnemyData e)
+    public void Despawn(Enemy e)
     {
         if (e == null) 
             return;
@@ -80,18 +97,29 @@ public class EnemyManager : GameManagerBase
         feelManager.Remove(e);
         Remove(e);                  // Remove from Manager's list
         pool.Return(e);
+
+        WaveManager.Instance?.NotifyEnemyRemoved();
     }
 
-    private void Remove(EnemyData e)
+    public void DespawnAll()
+    {
+        if (activeEnemies == null || activeEnemies.Count == 0)
+            return;
+
+        for (int i = activeEnemies.Count - 1; i >= 0; i--)
+            EnemyStateMachine.Set(activeEnemies[i], EnemyState.Pooled);
+    }
+
+    private void Remove(Enemy e)
     {
         if (e == null)
             return;
 
         int idx = e.masterIndex;
 
-        if (idx < 0 || idx > activeEnemies.Count || activeEnemies[idx] != e)
+        if (idx < 0 || idx >= activeEnemies.Count || activeEnemies[idx] != e)
         {
-            Debug.LogError($"EnemyMover: staled moverIndex on {e.name}", e);
+            Debug.LogError($"EnemyManager: staled masterIndex on {e.name}", e);
 
             activeEnemies.Remove(e);
             e.masterIndex = -1;

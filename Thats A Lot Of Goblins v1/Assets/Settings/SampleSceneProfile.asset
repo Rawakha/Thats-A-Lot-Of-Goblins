@@ -112,6 +112,52 @@ MonoBehaviour:
   saturation:
     m_OverrideState: 1
     m_Value: 0
+--- !u!114 &-6174453721355636723
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c01700fd266d6914ababb731e09af2eb, type: 3}
+  m_Name: DepthOfField
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.DepthOfField
+  active: 1
+  mode:
+    m_OverrideState: 1
+    m_Value: 1
+  gaussianStart:
+    m_OverrideState: 1
+    m_Value: 19
+  gaussianEnd:
+    m_OverrideState: 1
+    m_Value: 45
+  gaussianMaxRadius:
+    m_OverrideState: 1
+    m_Value: 1
+  highQualitySampling:
+    m_OverrideState: 1
+    m_Value: 1
+  focusDistance:
+    m_OverrideState: 1
+    m_Value: 10
+  aperture:
+    m_OverrideState: 1
+    m_Value: 5.6
+  focalLength:
+    m_OverrideState: 1
+    m_Value: 50
+  bladeCount:
+    m_OverrideState: 1
+    m_Value: 5
+  bladeCurvature:
+    m_OverrideState: 1
+    m_Value: 1
+  bladeRotation:
+    m_OverrideState: 1
+    m_Value: 0
 --- !u!114 &-3357603926938260329
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -164,7 +210,7 @@ MonoBehaviour:
     m_Value: {r: 0, g: 0, b: 0, a: 1}
   outlineThickness:
     m_OverrideState: 1
-    m_Value: 1.5
+    m_Value: 3
   enableClosenessBoost:
     m_OverrideState: 0
     m_Value: 0
@@ -187,8 +233,8 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 1
   depthSampleType:
-    m_OverrideState: 0
-    m_Value: 0
+    m_OverrideState: 1
+    m_Value: 1
   depthThickness:
     m_OverrideState: 1
     m_Value: 1
@@ -200,13 +246,13 @@ MonoBehaviour:
     m_Value: 1
   depthThreshold:
     m_OverrideState: 1
-    m_Value: 0.1
+    m_Value: 0
   depth9TilesThreshold:
     m_OverrideState: 1
-    m_Value: 0.5
+    m_Value: 0.195
   depth9TilesBottomFix:
     m_OverrideState: 1
-    m_Value: 0.005
+    m_Value: 0
   normalThickness:
     m_OverrideState: 1
     m_Value: 1
@@ -246,6 +292,7 @@ MonoBehaviour:
   - {fileID: -7770102168166170051}
   - {fileID: 2018633528962159822}
   - {fileID: -8539831022690035222}
+  - {fileID: -6174453721355636723}
 --- !u!114 &849379129802519247
 MonoBehaviour:
   m_ObjectHideFlags: 3

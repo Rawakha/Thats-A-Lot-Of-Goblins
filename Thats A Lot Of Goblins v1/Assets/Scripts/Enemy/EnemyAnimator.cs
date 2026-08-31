@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class EnemyAnimator : MonoBehaviour
 {
-    [SerializeField] private List<EnemyData> enemies = new();
+    [SerializeField] private List<Enemy> enemies = new();
 
     [Header("Distance Culling")]
     [SerializeField] private Transform camGroundPos;
@@ -22,6 +22,9 @@ public class EnemyAnimator : MonoBehaviour
 
     [Header("Waddle")]
     [SerializeField] private float waddleDegrees = 10f;
+
+    [Header("Gizmos")]
+    [SerializeField] private bool drawGizmos = false;
 
     private float animateDistanceSqr;
     private float appliedPi;
@@ -43,7 +46,7 @@ public class EnemyAnimator : MonoBehaviour
 
         for (int i = 0; i < enemies.Count; i++)
         {
-            EnemyData e = enemies[i];
+            Enemy e = enemies[i];
 
             if (e == null)
                 continue;
@@ -82,30 +85,35 @@ public class EnemyAnimator : MonoBehaviour
 
             // Compose the changes
             Vector3 bobPosition = new Vector3(0f, bob * bobHeight, 0f);
-            Quaternion visualRotation = e.facing * Quaternion.Euler(e.leanPitch, 0f, e.leanRoll + waddle);
 
             // Write to accumulators
             e.animScale = new Vector3(1f + (1f - squash) * 0.5f, squash, 1f + (1f - squash) * 0.5f);
             e.animOffset = bobPosition;
-            e.animRotation = visualRotation;
 
             // Apply accumulators
-            if (e.state == EnemyState.Airborne || e.state == EnemyState.Dying)
+            if (e.state == EnemyState.Dying)
             {
-                e.visual.localRotation = Quaternion.identity;
-                e.visual.localPosition = Vector3.zero;
+                e.visual.localScale = Vector3.Scale(e.visualBaseScale, e.feedbackScale);
             }
             else
             {
-                Quaternion animLocal = Quaternion.Euler(e.leanPitch, 0f, e.leanRoll + waddle);
-                e.visual.SetLocalPositionAndRotation(e.animOffset, animLocal);
-            }
+                if (e.state == EnemyState.Airborne)
+                {
+                    e.visual.localRotation = Quaternion.identity;
+                    e.visual.localPosition = Vector3.zero;
+                }
+                else
+                {
+                    Quaternion animLocal = Quaternion.Euler(e.leanPitch, 0f, e.leanRoll + waddle);
+                    e.visual.SetLocalPositionAndRotation(e.animOffset, animLocal);
+                }
 
-            e.visual.localScale = Vector3.Scale(Vector3.Scale(e.visualBaseScale, e.animScale), e.feedbackScale);
+                e.visual.localScale = Vector3.Scale(Vector3.Scale(e.visualBaseScale, e.animScale), e.feedbackScale);
+            }
         }
     }
 
-    public void Add(EnemyData e)
+    public void Add(Enemy e)
     {
         if (e == null || e.inAnimator)
             return;
@@ -115,7 +123,7 @@ public class EnemyAnimator : MonoBehaviour
         e.animatorIndex = enemies.Count - 1;
     }
 
-    public void Remove(EnemyData e)
+    public void Remove(Enemy e)
     {
         if (e == null || !e.inAnimator)
             return;
@@ -147,6 +155,9 @@ public class EnemyAnimator : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (!drawGizmos)
+            return;
+
         if (camGroundPos != null)
         {
             Gizmos.color = Color.yellow;
