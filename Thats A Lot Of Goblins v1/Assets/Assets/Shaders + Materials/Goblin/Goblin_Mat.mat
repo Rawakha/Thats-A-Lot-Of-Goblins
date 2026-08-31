@@ -27,7 +27,7 @@ Material:
   m_ValidKeywords: []
   m_InvalidKeywords: []
   m_LightmapFlags: 2
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
@@ -55,6 +55,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AmbientFill: 0.1
     - _DotDarkness: 1
     - _DotDensity: 12
     - _DotRadius: 0.5
@@ -63,11 +64,14 @@ Material:
     - _FresnelPower: 3
     - _FresnelStrength: 0
     - _Fresnel_Power: 1.5
-    - _GradientDarkness: -0.2
+    - _GradientCenter: 0.3
+    - _GradientDarkness: 0.5
+    - _GradientSize: 1
     - _HatchDarkness: 0.5
     - _HatchDensity: 8
     - _HatchSlant: 1
     - _HatchWidth: 0.4
+    - _LightingInfluence: 0.5
     - _MottleScale: 40
     - _MottleStrength: 0.2
     - _QueueControl: 0
@@ -84,7 +88,7 @@ Material:
     - _Back_Color: {r: 0, g: 0.85658014, b: 1, a: 1}
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Bottom_Tint: {r: 0.103773594, g: 0.103773594, b: 0.103773594, a: 1}
-    - _Color: {r: 0.24705882, g: 0.48235294, b: 0.2901961, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 1.4980391, g: 1.4980391, b: 1.4980391, a: 1}
     - _HatchLightDirection: {r: 0.29, g: 0.5, b: -0.22, a: 0}
     - _TopMultiplier: {r: 1.08, g: 1.04, b: 0.9, a: 1}

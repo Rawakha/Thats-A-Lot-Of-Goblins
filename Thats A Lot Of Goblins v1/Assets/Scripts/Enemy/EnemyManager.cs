@@ -6,6 +6,7 @@ public class EnemyManager : GameManagerBase
     public static EnemyManager Instance;
 
     [SerializeField] private HordeAudioManager audioManager;
+    [SerializeField] private EnemyRenderer renderer;
     [SerializeField] private EnemyVariation variation;
     [SerializeField] private EnemyPool pool;
     [SerializeField] private EnemyMover mover;
@@ -27,7 +28,7 @@ public class EnemyManager : GameManagerBase
     #region Initialization
     protected override bool OnInitialize(GameLevelBootstrap levelBootstrap)
     {
-        if (!audioManager || !variation || !pool || !animator || !airborneManager || !feelManager || !grid)
+        if (!audioManager || !renderer || !variation || !pool || !animator || !airborneManager || !feelManager || !grid)
         {
             Debug.LogError("EnemyManager: Missing components", this); 
             return false;
@@ -36,7 +37,8 @@ public class EnemyManager : GameManagerBase
         Utilities.CreateInstance(ref Instance, this);
 
         audioManager.Initialize(this);
-        variation.Initialize();
+        renderer.Initialize(this);
+        // variation.Initialize();
         airborneManager.Initialize(this);
         pool.Initialize(this);
         grid.Initialize(this);
@@ -50,6 +52,7 @@ public class EnemyManager : GameManagerBase
     public void GetComponents()
     {
         audioManager = GetComponentInChildren<HordeAudioManager>();
+        renderer = GetComponentInChildren<EnemyRenderer>();
         pool = GetComponentInChildren<EnemyPool>();
         mover = GetComponentInChildren<EnemyMover>();
         animator = GetComponentInChildren<EnemyAnimator>();
@@ -79,6 +82,7 @@ public class EnemyManager : GameManagerBase
         e.state = EnemyState.Pooled;
         e.OnSpawn();
         animator.Add(e);
+        renderer.Add(e);
         activeEnemies.Add(e);
         e.masterIndex = activeEnemies.Count - 1;
 
@@ -94,6 +98,7 @@ public class EnemyManager : GameManagerBase
         e.OnDespawn();
 
         animator.Remove(e);
+        renderer.Remove(e);
         feelManager.Remove(e);
         Remove(e);                  // Remove from Manager's list
         pool.Return(e);

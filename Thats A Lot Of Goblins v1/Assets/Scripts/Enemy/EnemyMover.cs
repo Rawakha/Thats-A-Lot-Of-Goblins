@@ -18,6 +18,9 @@ public class EnemyMover : MonoBehaviour
     [SerializeField, Range(0.01f, 0.3f)] private float turnThresholdFraction = 0.1f;
     [SerializeField] private float turnDegreesPerSecond = 180f;
 
+    [Header("Animation Movement")]
+    [SerializeField] private float animationStopSpeed = 0.12f;
+
     private float minTurnSpeedSqr;
     private float epsilonSqr;
 
@@ -48,8 +51,28 @@ public class EnemyMover : MonoBehaviour
             if (e == null || e.body == null) 
                 continue;
 
+            Vector3 currentPosition = e.body.position;
+            Vector3 travelled = currentPosition - e.previousMovementPosition;
+            travelled.y = 0f;
+
+            e.previousMovementPosition = currentPosition;
+            e.animationVelocity = travelled / dt;
+            e.animationSpeed = e.animationVelocity.magnitude;
+
+            if (e.animationSpeed < animationStopSpeed)
+            {
+                e.animationVelocity = Vector3.zero;
+                e.animationSpeed = 0f;
+            }
+
             if (currentTime < e.movementPausedUntil)
+            {
+                e.animationVelocity = Vector3.zero;
+                e.animationSpeed = 0f;
+                e.moveDelta = Vector3.zero;
+                e.turnRate = 0f;
                 continue;
+            }
 
             Vector3 velocity = e.body.linearVelocity;
             velocity.y = 0f;
@@ -78,11 +101,18 @@ public class EnemyMover : MonoBehaviour
             }
 
             // Rotation
-            if (velocity.sqrMagnitude > minTurnSpeedSqr)
+            if (e.animationSpeed > animationStopSpeed && jittered.sqrMagnitude > 0.001f)
             {
-                Quaternion target = Quaternion.LookRotation(velocity.normalized, Vector3.up);
-                e.facing = Quaternion.RotateTowards(e.facing, target, turnDegrees);
-                e.body.rotation = e.facing;
+                Quaternion previousFacing = e.facing;
+                Quaternion targetFacing = Quaternion.LookRotation(jittered.normalized, Vector3.up);
+                e.facing = Quaternion.RotateTowards(e.facing, targetFacing, turnDegrees);
+
+                float signedTurnDelta = Vector3.SignedAngle(previousFacing * Vector3.forward, e.facing * Vector3.forward, Vector3.up);
+                e.turnRate = signedTurnDelta / dt;
+            }
+            else
+            {
+                e.turnRate = 0f;
             }
         }
     }
@@ -104,6 +134,9 @@ public class EnemyMover : MonoBehaviour
         enemies.Add(enemy);
         enemy.inMover = true;
         enemy.moverIndex = enemies.Count - 1;
+        enemy.previousMovementPosition = enemy.body.position;
+        enemy.animationVelocity = Vector3.zero;
+        enemy.animationSpeed = 0f;
     }
 
     public void Remove(Enemy enemy)

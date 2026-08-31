@@ -18,15 +18,21 @@ public class Enemy : MonoBehaviour, IFlickable
     public float maxHealth = 50f;
     public float currentHealth = 0f;
 
+    [Header("Rendering")]
+    public Color renderColor = Color.white;
+    [Range(0f, 1f)] public float emissionValue;
+
     [Header("Tracking")]
     public EnemyState state = EnemyState.Pooled;
     public bool inMover = false;
+    public bool inRenderer = false;
     public bool inAnimator = false;
     public bool inFeedback = false;
 
     [HideInInspector] public int gridCell = -1;
     [HideInInspector] public int masterIndex = -1;
     [HideInInspector] public int moverIndex = -1;
+    [HideInInspector] public int rendererIndex = -1;
     [HideInInspector] public int animatorIndex = -1;
     [HideInInspector] public int damageIndex = -1;
     [HideInInspector] public int dyingIndex = -1;
@@ -35,22 +41,28 @@ public class Enemy : MonoBehaviour, IFlickable
     [HideInInspector] public int screamHandle = 0;
     [HideInInspector] public float speed;
     [HideInInspector] public float maxSpeed;
-    [HideInInspector] public float bobPhase;
-    [HideInInspector] public float bobSpeedMul;
-    [HideInInspector] public float leanPitch;
-    [HideInInspector] public float leanRoll;
     [HideInInspector] public float speedMultiplier;
     [HideInInspector] public float steerCos = 1f;
     [HideInInspector] public float steerSin = 0f;
     [HideInInspector] public float movementPausedUntil;
+    [HideInInspector] public float movementPhase;
+    [HideInInspector] public float movementAnimationWeight;
+    [HideInInspector] public float turnRate;
+    [HideInInspector] public float currentTurningLean;
+    [HideInInspector] public Vector3 previousMovementPosition;
+    [HideInInspector] public Vector3 animationVelocity;
+    [HideInInspector] public float animationSpeed;
     [HideInInspector] public float pendingLaunchSpeed;
     [HideInInspector] public Vector3 moveDelta;
 
     // Transform Accumulation
+    [HideInInspector] public Vector3 visualStartPos = Vector3.zero;
+    [HideInInspector] public Quaternion visualStartRot = Quaternion.identity;
     [HideInInspector] public Vector3 visualBaseScale = Vector3.one;
     [HideInInspector] public Vector3 feedbackScale = Vector3.one;
     [HideInInspector] public Vector3 animScale = Vector3.one;
     [HideInInspector] public Vector3 animOffset = Vector3.zero;
+    [HideInInspector] public Quaternion animRot = Quaternion.identity;
     [HideInInspector] public Quaternion facing = Quaternion.identity;
 
     public void OnSpawn()
@@ -61,6 +73,7 @@ public class Enemy : MonoBehaviour, IFlickable
         gridCell = -1;
         masterIndex = -1;
         moverIndex = -1;
+        rendererIndex = -1;
         animatorIndex = -1;
         damageIndex = -1;
         dyingIndex = -1;
@@ -69,21 +82,24 @@ public class Enemy : MonoBehaviour, IFlickable
         screamHandle = 0;
 
         inMover = false;
+        inRenderer = false;
         inAnimator = false;
         inFeedback = false;
 
-        bobPhase = 0f;
-        leanPitch = 0f;
-        leanRoll = 0f;
         steerCos = 1f;
         steerSin = 0f;
+        movementPhase = 0f;
         movementPausedUntil = 0f;
+        movementAnimationWeight = 0f;
+        turnRate = 0f;
+        currentTurningLean = 0f;
         pendingLaunchSpeed = 0f;
         moveDelta = Vector3.zero;
 
         feedbackScale = Vector3.one;
         animScale = Vector3.one;
         animOffset = Vector3.zero;
+        animRot = Quaternion.identity;
 
         body.isKinematic = false;
         collider.enabled = true;
@@ -100,6 +116,9 @@ public class Enemy : MonoBehaviour, IFlickable
     public void OnCreated()
     {
         EnemyManager.Instance.Variation.Apply(this);
+
+        visualStartPos = visual.localPosition;
+        visualStartRot = visual.localRotation;
 
         if (renderer != null )
             assignedMaterial = renderer.sharedMaterial;

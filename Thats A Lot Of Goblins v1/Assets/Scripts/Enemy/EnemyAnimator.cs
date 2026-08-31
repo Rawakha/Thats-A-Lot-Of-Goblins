@@ -9,30 +9,34 @@ public class EnemyAnimator : MonoBehaviour
     [SerializeField] private Transform camGroundPos;
     [SerializeField] private float animateDistance = 25f;
 
-    [Header("Bob")]
-    [SerializeField] private float bobHeight = 0.08f;
-    [SerializeField] private float bobSharpness = 0.5f; // >1 = snappier peaks, <1 = floatier
-    [SerializeField] private float bobCyclesPerMeter = 1.2f;
-    [SerializeField] private float bobSquash = 0.06f;
+    [Header("Movement Animation")]
+    [SerializeField] private float fullAnimationSpeed = 2f;
+    [SerializeField] private float animationBlendSpeed = 60f;
+    [SerializeField] private float strideCyclesPerMetre = 1.2f;
+    [SerializeField] private float waddleAngle = 10f;
+    [SerializeField] private float bounceHeight = 0.1f;
+    [SerializeField] private float yawSwingAngle = 15f;
 
     [Header("Lean")]
-    [SerializeField] private float leanDegreesPerAccel = 1.5f;
-    [SerializeField] private float maxLeanDegrees = 20f;
-    [SerializeField] private float leanSmoothing = 8f;
+    [SerializeField] private float forwardLeanAngle = 7f;
+    [SerializeField] private float maxTurningLeanAngle = 13f;
+    [SerializeField] private float turnRateForFullLean = 180f;
+    [SerializeField] private float turningLeanSpeed = 60f;
 
-    [Header("Waddle")]
-    [SerializeField] private float waddleDegrees = 10f;
+    [Header("Movement Squash")]
+    [SerializeField, Range(0f, 0.15f)] private float landingSquashAmount = 0.1f;
+    [SerializeField, Range(0f, 0.08f)] private float risingStretchAmount = 0.04f;
+    [SerializeField, Range(1f, 16f)] private float landingSquashSharpness = 3f;
+    [SerializeField, Range(1f, 8f)] private float risingStretchSharpness = 3f;
 
     [Header("Gizmos")]
     [SerializeField] private bool drawGizmos = false;
 
     private float animateDistanceSqr;
-    private float appliedPi;
 
     private void Awake()
     {
         animateDistanceSqr = animateDistance * animateDistance;
-        appliedPi = Mathf.PI * 2f;
     }
 
 #if UNITY_EDITOR
@@ -54,41 +58,12 @@ public class EnemyAnimator : MonoBehaviour
             Vector3 toCam = e.body.position - camPos;
             if (toCam.sqrMagnitude > animateDistanceSqr)
             {
-                e.bobPhase += e.speed * bobCyclesPerMeter * e.bobSpeedMul * dt * appliedPi;
+                e.movementPhase += e.animationSpeed * strideCyclesPerMetre * Mathf.PI * 2f * dt;
+                e.movementPhase = Mathf.Repeat(e.movementPhase, Mathf.PI * 2f);
                 continue;   // keep phase advancing, skip everything else
             }
 
-            float speedNormalized = e.maxSpeed > 0.01f ? Mathf.Clamp01(e.speed / e.maxSpeed) : 0f;
-
-            // Lean
-            Vector3 accel = e.moveDelta / dt;
-            Vector3 forward = e.facing * Vector3.forward;
-
-            float forwardAccel = Vector3.Dot(accel, forward);
-            float sideAccel = Vector3.Dot(accel, Vector3.Cross(Vector3.up, forward));
-
-            float pitch = Mathf.Clamp(-forwardAccel * leanDegreesPerAccel, -maxLeanDegrees, maxLeanDegrees);
-            float roll = Mathf.Clamp(-sideAccel * leanDegreesPerAccel, -maxLeanDegrees, maxLeanDegrees);
-
-            e.leanPitch = Mathf.Lerp(e.leanPitch, pitch, leanSmoothing * dt);
-            e.leanRoll = Mathf.Lerp(e.leanRoll, roll, leanSmoothing * dt);
-
-            // Bob + Wobble
-            e.bobPhase += e.speed * bobCyclesPerMeter * e.bobSpeedMul * dt * appliedPi;
-
-            float rawSin = Mathf.Sin(e.bobPhase);
-            float bob = Mathf.Pow(Mathf.Abs(rawSin), bobSharpness);
-            float waddle = rawSin * waddleDegrees * speedNormalized;
-
-            // Bob Squash
-            float squash = 1f - bob * bobSquash;
-
-            // Compose the changes
-            Vector3 bobPosition = new Vector3(0f, bob * bobHeight, 0f);
-
-            // Write to accumulators
-            e.animScale = new Vector3(1f + (1f - squash) * 0.5f, squash, 1f + (1f - squash) * 0.5f);
-            e.animOffset = bobPosition;
+            UpdateMovementAnimation(dt, e);
 
             // Apply accumulators
             if (e.state == EnemyState.Dying)
@@ -104,13 +79,77 @@ public class EnemyAnimator : MonoBehaviour
                 }
                 else
                 {
-                    Quaternion animLocal = Quaternion.Euler(e.leanPitch, 0f, e.leanRoll + waddle);
-                    e.visual.SetLocalPositionAndRotation(e.animOffset, animLocal);
+                    e.visual.SetLocalPositionAndRotation(e.animOffset, e.animRot);
                 }
 
                 e.visual.localScale = Vector3.Scale(Vector3.Scale(e.visualBaseScale, e.animScale), e.feedbackScale);
             }
         }
+    }
+
+    private void UpdateMovementAnimation(float deltaTime, Enemy e)
+    {
+        if (e == null)
+            return;
+
+        float speed = e.animationSpeed;
+
+        // Animation weight blending
+        bool isMoving = e.state == EnemyState.Walking && speed > 0f;
+        float targetWeight = isMoving ? Mathf.InverseLerp(0.05f, fullAnimationSpeed, speed) : 0f;
+        e.movementAnimationWeight = Mathf.MoveTowards(e.movementAnimationWeight, targetWeight, animationBlendSpeed * deltaTime);
+
+        // Movement lean
+        float normalizedTurnRate = Mathf.Clamp(e.turnRate / turnRateForFullLean, -1f, 1f);
+        float targetTurningLean = -normalizedTurnRate * maxTurningLeanAngle * e.movementAnimationWeight;
+        e.currentTurningLean = Mathf.MoveTowards(e.currentTurningLean, targetTurningLean, turningLeanSpeed * deltaTime);
+
+        // Movement Phase
+        if (isMoving)
+        {
+            e.movementPhase += speed * strideCyclesPerMetre * Mathf.PI * 2f * deltaTime;
+            e.movementPhase = Mathf.Repeat(e.movementPhase, Mathf.PI * 2f);
+        }
+
+        float stepWave = Mathf.Sin(e.movementPhase);
+        float bounceWave = Mathf.Abs(stepWave);
+
+        UpdateVerticalBounce(bounceWave, e);
+        UpdateMovementSquash(bounceWave, e);
+        UpdateVisualRotation(stepWave, e);
+    }
+
+    private void UpdateVerticalBounce(float bounceWave, Enemy e)
+    {
+        float verticalOffset = bounceWave * bounceHeight * e.movementAnimationWeight;
+        e.animOffset = e.visualStartPos + Vector3.up * verticalOffset;
+    }
+
+    private void UpdateMovementSquash(float bounceWave, Enemy e)
+    {
+        float landingPulse = Mathf.Pow(1f - bounceWave, landingSquashSharpness);
+        float risingStretch = Mathf.Pow(bounceWave, risingStretchSharpness);
+
+        float verticalScale = 1f - landingPulse * landingSquashAmount + risingStretch * risingStretchAmount;
+        verticalScale = Mathf.Lerp(1f, verticalScale, e.movementAnimationWeight);
+
+        float horizontalScale = 1f / Mathf.Sqrt(verticalScale);
+
+        e.animScale = new Vector3(horizontalScale, verticalScale, horizontalScale);
+    }
+
+    private void UpdateVisualRotation(float stepWave, Enemy e)
+    {
+        float yawSwing = stepWave * yawSwingAngle * e.movementAnimationWeight;
+        float sideWaddle = -stepWave * waddleAngle * e.movementAnimationWeight;
+        float forwardLean = forwardLeanAngle * e.movementAnimationWeight;
+        float totalSideLean = sideWaddle + e.currentTurningLean;
+
+        Quaternion movementRotation = Quaternion.Euler(forwardLean, yawSwing, totalSideLean);
+        Quaternion parentWorldRotation = e.visual.parent != null ? e.visual.parent.rotation : Quaternion.identity;
+        Quaternion localFacing = Quaternion.Inverse(parentWorldRotation) * e.facing;
+
+        e.animRot = localFacing * e.visualStartRot * movementRotation;
     }
 
     public void Add(Enemy e)

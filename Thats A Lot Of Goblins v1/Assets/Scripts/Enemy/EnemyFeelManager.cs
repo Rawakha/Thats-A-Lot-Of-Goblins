@@ -58,9 +58,6 @@ public class EnemyFeelManager : MonoBehaviour
     [SerializeField] private FeelSettings flickFeel;
     [SerializeField] private FeelSettings deathFeel;
 
-    [Header("Flash")]
-    [SerializeField] private Material flashMaterial;
-
     private List<ActiveFeedback> activeFeedbacks = new List<ActiveFeedback>(256);
 
     private void Awake()
@@ -99,20 +96,19 @@ public class EnemyFeelManager : MonoBehaviour
                 float horizontal = DOVirtual.EasedValue(1f, scale.horizontalTargetScale, t, scale.horizontalEase);
                 float vertical = DOVirtual.EasedValue(1f, scale.verticalTargetScale, t, scale.verticalEase);
                 Vector3 multiplier = new Vector3(Mathf.Max(0f, horizontal), Mathf.Max(0f, vertical), Mathf.Max(0f, horizontal));
-                enemy.feedbackScale = Vector3.Scale(enemy.visualBaseScale, multiplier);
+                enemy.feedbackScale = multiplier;
             }
 
             // Flash
             FlashSettings flash = feedbackSettings.flashSettings;
             if (flash.use)
             {
-                bool shouldFlash = active.elapsed < flash.duration;
-                if (shouldFlash != active.isFlashing)
-                {
-                    active.isFlashing = shouldFlash;
-                    enemy.renderer.sharedMaterial = shouldFlash ? flashMaterial : enemy.assignedMaterial;
-                }
-            }    
+                enemy.emissionValue = active.elapsed < flash.duration ? 1f : 0f;
+            }
+            else
+            {
+                enemy.emissionValue = 0f;
+            }
 
             if (normalizedTime >= 1f)
             {
@@ -227,9 +223,7 @@ public class EnemyFeelManager : MonoBehaviour
         enemy.inFeedback = false;
         enemy.feedbackIndex = -1;
         enemy.feedbackScale = Vector3.one;
-
-        if (enemy.renderer != null && enemy.assignedMaterial != null)
-            enemy.renderer.sharedMaterial = enemy.assignedMaterial;
+        enemy.emissionValue = 0f;
     }
 
     private void RemoveAtSwap(int index)
