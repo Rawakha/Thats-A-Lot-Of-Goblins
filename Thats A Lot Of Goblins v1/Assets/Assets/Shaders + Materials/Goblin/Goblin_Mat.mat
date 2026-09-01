@@ -71,11 +71,12 @@ Material:
     - _HatchDensity: 8
     - _HatchSlant: 1
     - _HatchWidth: 0.4
-    - _LightingInfluence: 0.5
+    - _LightingInfluence: 0.45
     - _MottleScale: 40
     - _MottleStrength: 0.2
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _Smoothness: 0.2
     - _TopStrength: 0
     - _WobbleAmount: 0.04
     - _WobbleBaseY: 0

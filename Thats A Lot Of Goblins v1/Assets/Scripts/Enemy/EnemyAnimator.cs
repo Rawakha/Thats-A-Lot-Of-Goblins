@@ -68,7 +68,7 @@ public class EnemyAnimator : MonoBehaviour
             // Apply accumulators
             if (e.state == EnemyState.Dying)
             {
-                e.visual.localScale = Vector3.Scale(e.visualBaseScale, e.feedbackScale);
+                e.visual.localScale = Vector3.Scale(Vector3.Scale(e.visualBaseScale, e.feedbackScale), e.deathScale);
             }
             else
             {

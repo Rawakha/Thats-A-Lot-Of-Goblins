@@ -20,7 +20,6 @@ public class EnemyFeelManager : MonoBehaviour
         public Enemy enemyData;
         public FeelSettings settings;
         public Action onComplete;
-
         public float elapsed;
         public bool isFlashing;
     }
@@ -31,31 +30,20 @@ public class EnemyFeelManager : MonoBehaviour
         public FeelType type;
         [Min(0.01f)] public float duration;
         public FlashSettings flashSettings;
-        public ScaleSettings scaleSettings;
-    }
+        public SquashSettings squashSettings;
 
-    [System.Serializable]
-    public struct FlashSettings
-    {
-        public bool use;
-        [Min(0.01f)] public float duration;
-    }
-
-    [System.Serializable]
-    public struct ScaleSettings
-    {
-        public bool use;
-        public bool returnToBase;
-        [Min(0.01f)] public float duration;
-        public float horizontalTargetScale;
-        public float verticalTargetScale;
-        public Ease horizontalEase;
-        public Ease verticalEase;
+        public static FeelSettings DefaultHit => new FeelSettings
+        {
+            type = FeelType.Hit,
+            duration = 0.8f,
+            flashSettings = FlashSettings.Default,
+            squashSettings = SquashSettings.Default
+        };
     }
 
     [Header("Feedbacks")]
-    [SerializeField] private FeelSettings hitFeel;
-    [SerializeField] private FeelSettings flickFeel;
+    [SerializeField] private FeelSettings hitFeel = FeelSettings.DefaultHit;
+    [SerializeField] private FeelSettings flickFeel = FeelSettings.DefaultHit;
     [SerializeField] private FeelSettings deathFeel;
 
     private List<ActiveFeedback> activeFeedbacks = new List<ActiveFeedback>(256);
@@ -84,33 +72,20 @@ public class EnemyFeelManager : MonoBehaviour
             active.elapsed += dt;
             float normalizedTime = Mathf.Clamp01(active.elapsed / feedbackSettings.duration);
 
-            // Scale
-            ScaleSettings scale = feedbackSettings.scaleSettings;
-            if (scale.use)
-            {
-                float scaleNormalizedTime = Mathf.Clamp01(active.elapsed / scale.duration);
-                float t = scale.returnToBase
-                    ? 1f - Mathf.Abs(scaleNormalizedTime * 2f - 1f)     // 0 → 1 → 0
-                    : scaleNormalizedTime;                              // 0 → 1, holds at target
-
-                float horizontal = DOVirtual.EasedValue(1f, scale.horizontalTargetScale, t, scale.horizontalEase);
-                float vertical = DOVirtual.EasedValue(1f, scale.verticalTargetScale, t, scale.verticalEase);
-                Vector3 multiplier = new Vector3(Mathf.Max(0f, horizontal), Mathf.Max(0f, vertical), Mathf.Max(0f, horizontal));
-                enemy.feedbackScale = multiplier;
-            }
+            // Squash
+            SquashSettings squash = feedbackSettings.squashSettings;
+            EnemySquash.Update(squash, enemy, dt);
 
             // Flash
             FlashSettings flash = feedbackSettings.flashSettings;
-            if (flash.use)
-            {
-                enemy.emissionValue = active.elapsed < flash.duration ? 1f : 0f;
-            }
-            else
-            {
-                enemy.emissionValue = 0f;
-            }
+            EnemyFlash.Update(flash, enemy, active.elapsed);
 
-            if (normalizedTime >= 1f)
+            bool squashFinished = EnemySquash.IsFinished(squash, enemy, active.elapsed);
+            bool flashFinished = EnemyFlash.IsFinished(flash, active.elapsed);
+            bool allEffectsFinished = squashFinished && flashFinished;
+            bool maximumDurationReached = active.elapsed >= feedbackSettings.duration;
+
+            if (allEffectsFinished || maximumDurationReached)
             {
                 Action onComplete = active.onComplete;
                 Remove(enemy);
@@ -120,24 +95,6 @@ public class EnemyFeelManager : MonoBehaviour
             {
                 activeFeedbacks[i] = active;
             }
-        }
-    }
-
-    private FeelSettings GetSettings(FeelType type)
-    {
-        switch (type) 
-        {
-            case FeelType.Hit:
-                return hitFeel;
-
-            case FeelType.Launch:
-                return flickFeel;
-
-            case FeelType.Death: 
-                return deathFeel;
-
-            default:
-                return hitFeel;
         }
     }
 
@@ -157,11 +114,16 @@ public class EnemyFeelManager : MonoBehaviour
             if (existingFeedback.enemyData == enemy)
             {
                 // If the feedback is the same, reset the elapsed time
+                bool sameFeel = existingFeedback.settings.type == settings.type;
+
                 existingFeedback.settings = settings;
                 existingFeedback.elapsed = 0f;
                 existingFeedback.onComplete = onComplete;
                 activeFeedbacks[enemy.feedbackIndex] = existingFeedback;
                 enemy.inFeedback = true;
+
+                EnemySquash.Begin(settings.squashSettings, enemy, sameFeel);
+                EnemyFlash.Update(settings.flashSettings, enemy, 0f);
                 return;
             }
         }
@@ -178,6 +140,8 @@ public class EnemyFeelManager : MonoBehaviour
         };
 
         activeFeedbacks.Add(activeFeedback);
+        EnemySquash.Begin(settings.squashSettings, enemy, restart: true);
+        EnemyFlash.Update(settings.flashSettings, enemy, 0f);
     }
 
     public void Remove(Enemy enemy)
@@ -222,8 +186,8 @@ public class EnemyFeelManager : MonoBehaviour
     {
         enemy.inFeedback = false;
         enemy.feedbackIndex = -1;
-        enemy.feedbackScale = Vector3.one;
-        enemy.emissionValue = 0f;
+        EnemySquash.Reset(enemy);
+        EnemyFlash.Reset(enemy);
     }
 
     private void RemoveAtSwap(int index)
@@ -240,5 +204,23 @@ public class EnemyFeelManager : MonoBehaviour
         }
 
         activeFeedbacks.RemoveAt(lastIndex);
+    }
+
+    private FeelSettings GetSettings(FeelType type)
+    {
+        switch (type)
+        {
+            case FeelType.Hit:
+                return hitFeel;
+
+            case FeelType.Launch:
+                return flickFeel;
+
+            case FeelType.Death:
+                return deathFeel;
+
+            default:
+                return hitFeel;
+        }
     }
 }

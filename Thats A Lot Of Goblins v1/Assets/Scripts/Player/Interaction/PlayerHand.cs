@@ -169,6 +169,12 @@ public class PlayerHand : MonoBehaviour
 
     private bool TryFlick(Vector3 flickPos)
     {
+        if (EnemyGrid.Instance == null)
+        {
+            Debug.LogWarning("EnemyGrid instance is null. Cannot perform flick.");
+            return false;
+        }
+
         // Find Goblins
         int hits = EnemyGrid.Instance.QueryRadius(flickPos, flickRadius, flickQueryResults);
         // Gizmos

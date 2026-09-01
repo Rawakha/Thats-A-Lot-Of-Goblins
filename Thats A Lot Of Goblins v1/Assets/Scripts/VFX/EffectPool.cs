@@ -1,45 +1,40 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.VFX;
 
-public class EffectPool : MonoBehaviour
+public enum EffectType
 {
-    [SerializeField] private VisualEffect bloodEffect;
-    [SerializeField] private int poolSize = 30;
-    [SerializeField] private float bloodDuration = 3f;
+    Hit,
+    Death
+}
 
-    [Header("Stats")]
-    [SerializeField, ReadOnly] private int currentPoolSize = 0;
-    [SerializeField, ReadOnly] private int active = 0;
-    [SerializeField, ReadOnly] private int inactive = 0;
-    [SerializeField, ReadOnly] private int peakActive = 0;
+public struct ActiveEffect
+{
+    public ParticleSystem effect;
+    public float startTime;
+}
 
-    private struct ActiveEffect
-    {
-        public VisualEffect effect;
-        public float startTime;
-    }
+[System.Serializable]
+public class EffectPool
+{
+    public EffectType type;
+    public int poolSize = 30;
+    public ParticleSystem effect;
+    public float effectDuration = 3f;
 
-    private Queue<VisualEffect> effectQueue;
-    private List<ActiveEffect> activeEffects;
+    private Queue<ParticleSystem> inactiveEffects = new();
+    private List<ActiveEffect> activeEffects = new();
 
-    private void Awake()
-    {
-        CreatePool();
-    }
-
-    private void Update()
+    public void ReturnFinished(float time)
     {
         if (activeEffects == null || activeEffects.Count == 0)
             return;
-
-        float time = Time.time;
 
         for (int i = activeEffects.Count - 1; i >= 0; i--)
         {
             ActiveEffect activeEffect = activeEffects[i];
 
-            if (time - activeEffect.startTime >= bloodDuration)
+            if (time - activeEffect.startTime >= effectDuration)
             {
                 Return(activeEffect.effect);
                 activeEffects.RemoveAt(i);
@@ -47,42 +42,21 @@ public class EffectPool : MonoBehaviour
         }
     }
 
-    private void CreatePool()
+    public void Play(Vector3 position, Quaternion rotation, Color color = default)
     {
-        if (bloodEffect == null)
+        if (!TryGetEffect(out ParticleSystem effect))
             return;
 
-        effectQueue = new Queue<VisualEffect>(poolSize);
-        activeEffects = new List<ActiveEffect>();
-
-        for (int i = 0; i < poolSize; i++)
+        if (color != default)
         {
-            Return(Instantiate(bloodEffect, transform));
-        }
-    }
-
-    private void Return(VisualEffect effect)
-    {
-        if (effect == null)
-            return;
-
-        effect.Stop();
-        effect.gameObject.SetActive(false);
-        effectQueue.Enqueue(effect);
-    }
-
-    public void Play(Vector3 position, Quaternion rotation)
-    {
-        if (effectQueue.Count == 0)
-        {
-            // Debug.Log("BloodPool: No blood left in pool");
-            return;
+            var main = effect.main;
+            main.startColor = color;
         }
 
-        VisualEffect effect = effectQueue.Dequeue();
         effect.transform.position = position;
         effect.transform.rotation = rotation;
         effect.gameObject.SetActive(true);
+
         effect.Play();
 
         activeEffects.Add(new ActiveEffect
@@ -90,5 +64,36 @@ public class EffectPool : MonoBehaviour
             effect = effect,
             startTime = Time.time
         });
+    }
+
+    private bool TryGetEffect(out ParticleSystem effect)
+    {
+        if (inactiveEffects.Count > 0)
+        {
+            effect = inactiveEffects.Dequeue();
+        }
+        else if (activeEffects.Count > 0)
+        {
+            effect = activeEffects[0].effect;
+            activeEffects.RemoveAt(0);
+            effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+        else
+        {
+            effect = null;
+            return false;
+        }
+
+        return true;
+    }
+
+    public void Return(ParticleSystem effect)
+    {
+        if (effect == null)
+            return;
+
+        effect.Stop();
+        effect.gameObject.SetActive(false);
+        inactiveEffects.Enqueue(effect);
     }
 }

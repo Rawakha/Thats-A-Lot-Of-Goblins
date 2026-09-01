@@ -7,18 +7,13 @@ public class EnemyDeathManager : MonoBehaviour
 {
     public static EnemyDeathManager Instance;
 
-    [SerializeField] private float toppleDuration = 0.5f;
-    [SerializeField] private float lingerDuration = 3f;
-    [SerializeField] private float sinkDuration = 1f;
-    [SerializeField] private float sinkDepth = 5f;
+    [SerializeField] private float deathDuration = 0.1f;
+    [SerializeField] private Ease deathEase = Ease.InBack;
 
     private struct Dying
     {
         public Enemy enemy;
         public float startTime;
-        public Quaternion startRotation;
-        public Quaternion targetRotation;
-        public Vector3 startPosition;
     }
 
     private List<Dying> dying = new List<Dying>(128);
@@ -39,24 +34,33 @@ public class EnemyDeathManager : MonoBehaviour
         {
             Dying d = dying[i];
 
-            float elapsed = now - d.startTime;
-            if (elapsed < toppleDuration)
+            if (d.enemy == null)
             {
-                float t = elapsed / toppleDuration;
-                float eased = DOVirtual.EasedValue(0f, 1f, t, Ease.InQuad);
-                d.enemy.visual.rotation = Quaternion.Slerp(d.startRotation, d.targetRotation, eased);
+                RemoveAtSwap(i);
+                continue;
             }
-            else if (elapsed > toppleDuration + lingerDuration)
-            {
-                float t = (elapsed - toppleDuration - lingerDuration) / sinkDuration;
-                d.enemy.transform.position = d.startPosition + Vector3.down * (t * sinkDepth);
 
-                if (t >= 1f)
-                {
-                    EnemyStateMachine.Set(d.enemy, EnemyState.Pooled);
-                }
+            float t = Mathf.Clamp01((now - d.startTime) / deathDuration);
+            float eased = DOVirtual.EasedValue(1f, 0f, t, deathEase);
+            d.enemy.deathScale = Vector3.one * eased;
+
+            if (t >= 1f)
+            {
+                EnemyStateMachine.Set(d.enemy, EnemyState.Pooled);
             }
         }
+    }
+
+    private void PlayDeathParticles(Enemy e)
+    {
+        if (e == null)
+            return;
+
+        // Play death particles
+        Vector3 position = e.body.worldCenterOfMass;
+        Vector3 awayDirecton = e.lastHitPos - position; awayDirecton.y = 0f;
+        Quaternion rotation = awayDirecton.sqrMagnitude > 0.001f ? Quaternion.LookRotation(awayDirecton.normalized, Vector3.up) : Quaternion.LookRotation(-e.transform.forward, Vector3.up);
+        EffectDirector.Instance.Request(EffectType.Death, position, rotation, e.renderColor);
     }
 
     public void Add(Enemy e)
@@ -68,18 +72,13 @@ public class EnemyDeathManager : MonoBehaviour
         e.collider.enabled = false;
         e.dyingIndex = dying.Count;
 
-        // Later Change to Damage Direction + Variance
-        float yaw = Random.Range(0f, 360f);
-        Quaternion target = Quaternion.Euler(0f, yaw, 0f) * Quaternion.Euler(90f, 0f, 0f);
-
         dying.Add(new Dying
         {
             enemy = e,
-            startTime = Time.time,
-            startRotation = e.visual.rotation,
-            targetRotation = target,
-            startPosition = e.visual.position
+            startTime = Time.time
         });
+
+        PlayDeathParticles(e);
     }
 
     public void Remove(Enemy e)
@@ -112,7 +111,7 @@ public class EnemyDeathManager : MonoBehaviour
         e.dyingIndex = -1;
     }
         
-    public void RemoveAtSwap(int index)
+    private void RemoveAtSwap(int index)
     {
         int lastIndex = dying.Count - 1;
 

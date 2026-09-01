@@ -23,7 +23,7 @@ MonoBehaviour:
     - {fileID: 8300000, guid: 4a741fb44d0cf2f4fa43400a39fd07bc, type: 3}
     - {fileID: 8300000, guid: 494cc236fa44ba64aba8ccf539393e93, type: 3}
     priority: 1
-    volume: 0.25
+    volume: 0.05
     loopSound: 0
-    pitchRange: 0.2
-    volumeRange: 0
+    pitchRange: 0.35
+    volumeRange: 0.01

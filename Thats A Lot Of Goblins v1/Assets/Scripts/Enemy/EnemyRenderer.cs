@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 [DefaultExecutionOrder(1000)]
 public class EnemyRenderer : MonoBehaviour
 {
-    private const int MaxInstances = 1023;
+    private const int MaxInstancesPerBatch = 1023;
 
     [Header("Rendering")]
     [SerializeField] private Mesh mesh;
@@ -17,8 +17,8 @@ public class EnemyRenderer : MonoBehaviour
     [Header("Tracking")]
     [SerializeField] private List<Enemy> enemies = new List<Enemy>(1000);
 
-    private readonly Matrix4x4[] matrices = new Matrix4x4[MaxInstances];
-    private readonly Vector4[] colorFlashValues = new Vector4[MaxInstances];
+    private readonly Matrix4x4[] matrices = new Matrix4x4[MaxInstancesPerBatch];
+    private readonly Vector4[] colorFlashValues = new Vector4[MaxInstancesPerBatch];
 
     private MaterialPropertyBlock propertyBlock;
 
@@ -44,42 +44,38 @@ public class EnemyRenderer : MonoBehaviour
 
     private void DrawEnemies()
     {
-        int count = 0;
-
-        for (int i = 0; i < enemies.Count; i++)
+        int totalCount = enemies.Count;
+        for (int batchStart = 0; batchStart < totalCount; batchStart += MaxInstancesPerBatch)
         {
-            Enemy e = enemies[i];
+            int listCount = Mathf.Min(MaxInstancesPerBatch, totalCount - batchStart);
+            int validCount = 0;
 
-            if (e == null || e.visual == null)
-                return;
+            for (int i = 0; i < listCount; i++)
+            {
+                Enemy e = enemies[batchStart + i];
 
-            Color color = e.renderColor;
-            colorFlashValues[count] = new Vector4(color.r, color.g, color.b, Mathf.Clamp01(e.emissionValue));
-            matrices[count] = e.visual.localToWorldMatrix;
+                if (e == null || e.visual == null || !e.gameObject.activeInHierarchy)
+                    continue;
 
-            count++;
-            if (count >= MaxInstances)
-                break;
+                Color color = e.renderColor;
+                colorFlashValues[validCount] = new Vector4(color.r, color.g, color.b, Mathf.Clamp01(e.emissionValue));
+                matrices[validCount] = e.visual.localToWorldMatrix;
+
+                validCount++;
+            }
+
+            if (validCount == 0)
+                continue;
+
+            propertyBlock.SetVectorArray(GoblinColorFlashId, colorFlashValues);
+            Graphics.DrawMeshInstanced(mesh, subMeshIndex, material, matrices, listCount, propertyBlock, shadowCasting, receivedShadows, gameObject.layer, null, LightProbeUsage.Off);
         }
-
-        if (count == 0)
-            return;
-
-        propertyBlock.SetVectorArray(GoblinColorFlashId, colorFlashValues);
-
-        Graphics.DrawMeshInstanced(mesh, subMeshIndex, material, matrices, count, propertyBlock, shadowCasting, receivedShadows, gameObject.layer, null, LightProbeUsage.Off);
     }
 
     public void Add(Enemy e)
     {
         if (e == null || e.inRenderer)
             return;
-
-        if (enemies.Count > MaxInstances)
-        {
-            Debug.LogError("EnemyRenderer: Instance limit reached.", this);
-            return;
-        }
 
         enemies.Add(e);
         e.inRenderer = true;

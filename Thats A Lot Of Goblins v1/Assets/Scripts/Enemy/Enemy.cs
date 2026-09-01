@@ -16,7 +16,8 @@ public class Enemy : MonoBehaviour, IFlickable
 
     [Header("Health")]
     public float maxHealth = 50f;
-    public float currentHealth = 0f;
+    [ReadOnly] public float currentHealth = 0f;
+    [ReadOnly] public Vector3 lastHitPos;
 
     [Header("Rendering")]
     public Color renderColor = Color.white;
@@ -54,11 +55,14 @@ public class Enemy : MonoBehaviour, IFlickable
     [HideInInspector] public float animationSpeed;
     [HideInInspector] public float pendingLaunchSpeed;
     [HideInInspector] public Vector3 moveDelta;
+    [HideInInspector] public float springValue = 1f;
+    [HideInInspector] public float springVelocity;
 
     // Transform Accumulation
     [HideInInspector] public Vector3 visualStartPos = Vector3.zero;
     [HideInInspector] public Quaternion visualStartRot = Quaternion.identity;
     [HideInInspector] public Vector3 visualBaseScale = Vector3.one;
+    [HideInInspector] public Vector3 deathScale = Vector3.one;
     [HideInInspector] public Vector3 feedbackScale = Vector3.one;
     [HideInInspector] public Vector3 animScale = Vector3.one;
     [HideInInspector] public Vector3 animOffset = Vector3.zero;
@@ -68,6 +72,7 @@ public class Enemy : MonoBehaviour, IFlickable
     public void OnSpawn()
     {
         currentHealth = maxHealth;
+        lastHitPos = Vector3.zero;
 
         maxSpeed = 1f;
         gridCell = -1;
@@ -95,7 +100,10 @@ public class Enemy : MonoBehaviour, IFlickable
         currentTurningLean = 0f;
         pendingLaunchSpeed = 0f;
         moveDelta = Vector3.zero;
+        springValue = 1f;
+        springVelocity = 0f;
 
+        deathScale = Vector3.one;
         feedbackScale = Vector3.one;
         animScale = Vector3.one;
         animOffset = Vector3.zero;

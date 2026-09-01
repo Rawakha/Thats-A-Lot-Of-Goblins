@@ -35,17 +35,8 @@ public static class EnemyStateMachine
 
             case EnemyState.Dying:
                 EnemyMover.Instance.Remove(e);
-                if (previous == EnemyState.Airborne) 
-                {
-                    Debug.Log("Airborne Death");
-
-                    EnemyFeelManager.Instance.Add(e, FeelType.Death, () => Set(e, EnemyState.Pooled));
-                }
-                else
-                {
-                    EnemyFeelManager.Instance.Add(e, FeelType.Hit);
-                    EnemyDeathManager.Instance.Add(e);
-                }
+                EnemyFeelManager.Instance.Add(e, FeelType.Hit);
+                EnemyDeathManager.Instance.Add(e);
                 break;
 
             case EnemyState.Pooled:

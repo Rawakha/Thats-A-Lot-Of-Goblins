@@ -40,6 +40,7 @@ public class EnemyHealthManager : MonoBehaviour
                 continue;
 
             e.currentHealth -= p.total;
+            e.lastHitPos = p.lastHitPos;
             e.damageIndex = -1;
 
             Vector3 away = e.body.worldCenterOfMass - p.lastHitPos;
@@ -60,6 +61,7 @@ public class EnemyHealthManager : MonoBehaviour
 
             if (feelBudget > 0)
             {
+                HordeAudioManager.Instance.RequestHit(p.lastHitPos);
                 EnemyFeelManager.Instance.Add(e, EnemyFeelManager.FeelType.Hit);
                 feelBudget--;
             }

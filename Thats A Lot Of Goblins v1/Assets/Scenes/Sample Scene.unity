@@ -3122,7 +3122,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 337656011}
-  - component: {fileID: 337656013}
   - component: {fileID: 337656012}
   m_Layer: 0
   m_Name: Effect Manager
@@ -3158,28 +3157,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1478bc211c0b72d48971c2215340a226, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EffectDirector
-  pool: {fileID: 337656013}
-  maxPlaysPerFrame: 12
+  effectPools:
+  - type: 1
+    poolSize: 50
+    effect: {fileID: 5174065390796003152, guid: c508559e298e79441af9e75d0ca99571, type: 3}
+    effectDuration: 0.5
+  maxRequestProcessesPerFrame: 12
   maxQueueSize: 60
---- !u!114 &337656013
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 337656009}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 51c29ee2af490cb4793d5580171de599, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EffectPool
-  bloodEffect: {fileID: 0}
-  poolSize: 30
-  bloodDuration: 3
-  currentPoolSize: 0
-  active: 0
-  inactive: 0
-  peakActive: 0
 --- !u!1 &377205508
 GameObject:
   m_ObjectHideFlags: 0
@@ -4708,6 +4692,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7f6bfbc2db7fcf48b98fa3d6a05abcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HordeAudioManager
+  hitSound: {fileID: 11400000, guid: a6ccb0a4d7b9f3e48a0e11d4d13feadf, type: 2}
+  minHitInterval: 0.06
+  maxHitsPerFrame: 6
+  listener: {fileID: 951396152}
+  maxAudibleDistance: 100
 --- !u!1 &698662402
 GameObject:
   m_ObjectHideFlags: 0
@@ -5760,43 +5749,151 @@ MonoBehaviour:
     duration: 0.2
     flashSettings:
       use: 1
-      duration: 0.05
-    scaleSettings:
+      duration: 0.125
+      remapZero: 0
+      remapOne: 1
+      curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.3
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    squashSettings:
       use: 1
-      returnToBase: 1
-      duration: 0.15
-      horizontalTargetScale: 1.5
-      verticalTargetScale: 0.85
-      horizontalEase: 6
-      verticalEase: 6
+      stiffness: 150
+      damping: 10
+      restValue: 1
+      impactStrength: 10
+      minimumDuration: 0.12
+      settleDistance: 0.01
+      settleVelocity: 0.05
   flickFeel:
     type: 1
-    duration: 0.25
+    duration: 0.2
     flashSettings:
       use: 0
-      duration: 0
-    scaleSettings:
+      duration: 0.125
+      remapZero: 0
+      remapOne: 1
+      curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.3
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    squashSettings:
       use: 1
-      returnToBase: 1
-      duration: 0.25
-      horizontalTargetScale: 1.3
-      verticalTargetScale: 0.8
-      horizontalEase: 27
-      verticalEase: 26
+      stiffness: 150
+      damping: 10
+      restValue: 1
+      impactStrength: 10
+      minimumDuration: 0.12
+      settleDistance: 0.01
+      settleVelocity: 0.05
   deathFeel:
     type: 2
-    duration: 0.35
+    duration: 0.01
     flashSettings:
       use: 0
-      duration: 0.01
-    scaleSettings:
-      use: 1
-      returnToBase: 0
-      duration: 0.35
-      horizontalTargetScale: 0
-      verticalTargetScale: 0
-      horizontalEase: 2
-      verticalEase: 2
+      duration: 0.125
+      remapZero: 0
+      remapOne: 1
+      curve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 0.3
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    squashSettings:
+      use: 0
+      stiffness: 150
+      damping: 10
+      restValue: 1
+      impactStrength: 10
+      minimumDuration: 0.12
+      settleDistance: 0.01
+      settleVelocity: 0.05
 --- !u!1001 &923367528
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11107,10 +11204,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98ab57fe985a0bd4ca1a80ea3ca0be13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDeathManager
-  toppleDuration: 0.15
-  lingerDuration: 3
-  sinkDuration: 1
-  sinkDepth: 5
+  deathDuration: 0.1
+  deathEase: 26
 --- !u!1 &1991575537
 GameObject:
   m_ObjectHideFlags: 0
