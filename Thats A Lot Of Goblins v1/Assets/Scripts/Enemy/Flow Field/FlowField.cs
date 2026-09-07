@@ -49,6 +49,8 @@ public class FlowField : MonoBehaviour
         new Vector2Int(-1, -1),
     };
 
+    public Grid Grid => grid;
+
     private void Update()
     {
         if (rebuildPerFrame)
@@ -73,7 +75,7 @@ public class FlowField : MonoBehaviour
         BakeImpassable();
 
         BuildCost();
-        BuildIntegration(grid.ToCell(goal.position));
+        BuildIntegration(grid.WorldToCell(goal.position));
         BuildDirections();
     }
 
@@ -92,7 +94,7 @@ public class FlowField : MonoBehaviour
         }
 
         BuildCost();
-        BuildIntegration(grid.ToCell(goal.position));
+        BuildIntegration(grid.WorldToCell(goal.position));
         BuildDirections();
     }
 
@@ -281,12 +283,47 @@ public class FlowField : MonoBehaviour
         return new Vector3(d.x, 0f, d.y);
     }
 
+    public void SetCellsBlocked(Vector2Int origin, Vector2Int size, bool blocked)
+    {
+        byte value = blocked ? costData.Impassable : costData.Default;
+
+        for (int y = 0; y < size.y; y++)
+        {
+            for (int x = 0; x < size.x; x++)
+            {
+                Vector2Int cell = new Vector2Int(origin.x + x, origin.y + y);
+                if (!grid.InBounds(cell)) continue;
+                int index = grid.ToIndex(cell);
+                this.blocked[index] = value;
+            }
+        }
+
+        Rebuild();
+    }
+
     [InspectorButton]
     public void CentraliseGrid()
     {
         float x = (grid.width / 2f) * grid.cellSize;
         float z = (grid.height / 2f) * grid.cellSize;
         grid.origin = new Vector3(-x, grid.origin.y, -z);
+    }
+
+    public bool IsImpassable(Vector2Int cell)
+    {
+        if (!grid.InBounds(cell))
+            return true;
+
+        int index = grid.ToIndex(cell);
+        return cost[index] == costData.Impassable;
+    }
+
+    public bool IsImpassable(int index)
+    {
+        if (!grid.InBounds(index))
+            return true;
+
+        return cost[index] == costData.Impassable;
     }
 
     #region Gizmos

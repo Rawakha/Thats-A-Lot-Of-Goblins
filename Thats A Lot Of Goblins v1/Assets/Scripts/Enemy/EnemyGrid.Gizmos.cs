@@ -109,7 +109,7 @@ public partial class EnemyGrid
             Gizmos.color = new Color(0f, 0.5f, 1f, 0.25f);
             Gizmos.DrawWireSphere(q.position, q.radius);
 
-            Vector2Int centre = grid.ToCell(q.position);
+            Vector2Int centre = grid.WorldToCell(q.position);
             int r = Mathf.CeilToInt(q.radius / grid.cellSize);
             Vector3 size = new Vector3(grid.cellSize, 0.02f, grid.cellSize) * 0.85f;
 

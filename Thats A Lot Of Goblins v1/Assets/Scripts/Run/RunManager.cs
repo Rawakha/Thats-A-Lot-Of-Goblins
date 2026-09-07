@@ -146,11 +146,16 @@ public class RunManager : GameManagerBase
         OnGoldGained?.Invoke(currentGold);
     }
 
-    public void TakeGold(int gold)
+    public bool TrySpendGold(int gold)
     {
-        currentGold -= gold;
-        currentGold = Mathf.Max(currentGold, 0);
+        if (gold < 0)
+            return false;
 
+        if (currentGold < gold)
+            return false;
+
+        currentGold -= gold;
         OnGoldLost?.Invoke(currentGold);
+        return true;
     }
 }

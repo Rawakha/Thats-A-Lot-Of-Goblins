@@ -10,7 +10,13 @@ public struct Grid
 
     public int CellCount => width * height;
 
-    public Vector2Int ToCell(Vector3 world)
+    public Vector3 WorldToSnapped(Vector3 world)
+    {
+        Vector2Int cell = WorldToCell(world);
+        return CellCentre(cell);
+    }
+
+    public Vector2Int WorldToCell(Vector3 world)
     {
         int x = Mathf.FloorToInt((world.x - origin.x) / cellSize);
         int y = Mathf.FloorToInt((world.z - origin.z) / cellSize);
@@ -24,7 +30,7 @@ public struct Grid
 
     public int ToIndex(Vector3 world)
     {
-        return ToIndex(ToCell(world));
+        return ToIndex(WorldToCell(world));
     }
 
     public Vector3 CellCentre(Vector2Int cell)
@@ -46,6 +52,11 @@ public struct Grid
 
     public bool InBounds(Vector3 world)
     {
-        return InBounds(ToCell(world));
+        return InBounds(WorldToCell(world));
+    }
+
+    public bool InBounds(int index)
+    {
+        return index >= 0 && index < CellCount;
     }
 }

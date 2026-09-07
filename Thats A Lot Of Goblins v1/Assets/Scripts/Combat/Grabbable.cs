@@ -43,6 +43,8 @@ public class Grabbable : MonoBehaviour
             return;
 
         state = GrabState.Held;
+
+        OnGrabbedInternal();
     }
 
     public void OnDragged(Vector3 worldPos)
@@ -69,6 +71,11 @@ public class Grabbable : MonoBehaviour
     }
 
     protected virtual void OnReleasedInternal(Vector3 velocity)
+    {
+
+    }
+
+    protected virtual void OnGrabbedInternal()
     {
 
     }

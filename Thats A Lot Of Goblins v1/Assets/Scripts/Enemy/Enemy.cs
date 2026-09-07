@@ -30,6 +30,9 @@ public class Enemy : MonoBehaviour, IFlickable
     public bool inAnimator = false;
     public bool inFeedback = false;
 
+    // Getters
+    public bool IsAlive => state == EnemyState.Walking;
+
     [HideInInspector] public int gridCell = -1;
     [HideInInspector] public int masterIndex = -1;
     [HideInInspector] public int moverIndex = -1;

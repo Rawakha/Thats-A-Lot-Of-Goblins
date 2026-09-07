@@ -7,7 +7,7 @@ public class RunManagerUI : MonoBehaviour
 {
     public static RunManagerUI Instance;
     [SerializeField] private GameObject runUIParent;
-    [SerializeField] private Button waveStartButton;
+    [SerializeField] private CustomButton waveStartButton;
     [SerializeField] private TextMeshProUGUI goldText;
     [SerializeField] private TextMeshProUGUI livesText;
 

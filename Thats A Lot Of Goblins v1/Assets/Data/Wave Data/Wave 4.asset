@@ -10,8 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e99e04b5d1a3c14a9a9276047d13770, type: 3}
-  m_Name: Wave 3
+  m_Name: Wave 4
   m_EditorClassIdentifier: Assembly-CSharp::WaveDefinition
-  totalEnemies: 100
-  spawnDelay: 0.1
-  goldReward: 200
+  totalEnemies: 350
+  spawnDelay: 0.2
+  spawnPointCount: 3
+  goldReward: 250

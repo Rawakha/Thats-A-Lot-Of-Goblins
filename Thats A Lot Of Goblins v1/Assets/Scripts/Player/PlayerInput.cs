@@ -47,7 +47,7 @@ public class PlayerInput : MonoBehaviour
         }
     }
 
-    private bool TryGetGroundPoint(Vector2 screenPos, out Vector3 worldPoint)
+    public bool TryGetGroundPoint(Vector3 screenPos, out Vector3 worldPoint)
     {
         worldPoint = default;
         if (cam == null || Mouse.current == null)

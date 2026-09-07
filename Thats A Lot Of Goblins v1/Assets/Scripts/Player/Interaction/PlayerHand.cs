@@ -1,9 +1,13 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
+[DefaultExecutionOrder(Utilities.ExecutionOrder.Singletons)]
 public class PlayerHand : MonoBehaviour
 {
+    public static PlayerHand Instance;
+
     [SerializeField] private LayerMask grabbableLayerMask;
     [SerializeField] private Camera cam;
 
@@ -31,6 +35,11 @@ public class PlayerHand : MonoBehaviour
     private readonly List<Grabbable> heldObjects = new(8);
     private List<Enemy> flickQueryResults = new List<Enemy>();
 
+    private void Awake()
+    {
+        Utilities.CreateInstance(ref Instance, this);
+    }
+
     private void Update()
     {
         if (Mouse.current == null || Keyboard.current == null)
@@ -52,7 +61,12 @@ public class PlayerHand : MonoBehaviour
         Vector3 holdPos = groundPos + Vector3.up * holdHeight;
 
         if (pressed)
+        {
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                return;
+
             BeginPress(groundPos);
+        }
 
         if (down & isPressing)
         {
@@ -100,6 +114,24 @@ public class PlayerHand : MonoBehaviour
             return false;
 
         return TryCapture(g);
+    }
+
+    public void ForceGrab(Grabbable g)
+    {
+        if (g == null || g.State != GrabState.Free)
+            return;
+
+        isPressing = true;
+        dragVelocity = Vector3.zero;
+        orbitAngle = 0f;
+
+        if (PlayerInput.Instance.TryGetGroundPoint(out Vector3 groundPos))
+        {
+            lastDragPos = groundPos;
+            pressGroundPos = groundPos;
+        }
+
+        TryCapture(g);
     }
 
     private bool TryCapture(Grabbable g)

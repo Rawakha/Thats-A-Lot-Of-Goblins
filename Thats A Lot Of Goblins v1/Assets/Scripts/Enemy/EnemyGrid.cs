@@ -49,7 +49,7 @@ public partial class EnemyGrid : MonoBehaviour
             if (e == null || e.state == EnemyState.Pooled || e.state == EnemyState.Dying)
                 continue;
 
-            Vector2Int cell = grid.ToCell(e.body.position);
+            Vector2Int cell = grid.WorldToCell(e.body.position);
             if (!grid.InBounds(cell)) continue;
 
             e.gridCell = grid.ToIndex(cell);
@@ -80,7 +80,7 @@ public partial class EnemyGrid : MonoBehaviour
     {
         results.Clear();
 
-        Vector2Int centre = grid.ToCell(pos);
+        Vector2Int centre = grid.WorldToCell(pos);
         int r = Mathf.CeilToInt(radius / grid.cellSize);
         float radiusSqr = radius * radius;
 
