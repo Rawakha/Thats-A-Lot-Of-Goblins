@@ -1,4 +1,5 @@
 using DG.Tweening;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Tower : MonoBehaviour
@@ -14,9 +15,9 @@ public class Tower : MonoBehaviour
     [SerializeField] private Ease spawnEase = Ease.OutBack;
 
     [Header("Targeting")]
-    [SerializeField] private float gainTargetRange = 5f;
-    [SerializeField] private float loseTargetRange = 6f;
-    [SerializeField] private Enemy currentTarget;
+    [SerializeField] protected float gainTargetRange = 5f;
+    [SerializeField] protected float loseTargetRange = 6f;
+    [SerializeField] protected Enemy currentTarget;
     [SerializeField] private bool drawTargetingGizmos = false;
 
     private Tween spawnTween;
@@ -25,9 +26,6 @@ public class Tower : MonoBehaviour
     public Vector3 WorldPosition => transform.position;
     public Vector2Int GridPosition => gridPosition;
     public int ManagerIndex => managerIndex;
-    public float GainTargetRange => gainTargetRange;
-    public float LoseTargetRange => loseTargetRange;
-    public Enemy CurrentTarget => currentTarget;
 
     public void Initialize(TowerDefinition definition, Vector2Int gridPos, int index)
     {
@@ -66,23 +64,26 @@ public class Tower : MonoBehaviour
         spawnTween = null;
     }
 
-    public virtual void SetTarget(Enemy enemy)
+    public virtual void GetTarget(List<Enemy> results)
     {
-        currentTarget = enemy;
+        if (results == null)
+            return;
+
+        // Default Get Closest
+        currentTarget = EnemyUtilities.GetClosestEnemy(WorldPosition, gainTargetRange, results);
     }
 
     public virtual bool HasValidTarget()
     {
-        if (currentTarget == null || !currentTarget.IsAlive) 
+        return IsTargetValid(currentTarget);
+    }
+
+    protected virtual bool IsTargetValid(Enemy target)
+    {
+        if (target == null || !target.IsAlive) 
             return false;
 
-        Vector3 targetPosition = currentTarget.body.position;
-
-        float xDistance = targetPosition.x - WorldPosition.x;
-        float zDistance = targetPosition.z - WorldPosition.z;
-        float distanceSqr = xDistance * xDistance + zDistance * zDistance;
-
-        return distanceSqr <= LoseTargetRange * LoseTargetRange;
+        return Utilities.IsWithinHorizontalRange(target.body.position, WorldPosition, loseTargetRange);
     }
 
 #if UNITY_EDITOR
@@ -91,7 +92,7 @@ public class Tower : MonoBehaviour
         if (drawTargetingGizmos)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(WorldPosition, GainTargetRange);
+            Gizmos.DrawWireSphere(WorldPosition, gainTargetRange);
 
             Gizmos.color = Color.gray;
             Gizmos.DrawWireSphere(WorldPosition, loseTargetRange);

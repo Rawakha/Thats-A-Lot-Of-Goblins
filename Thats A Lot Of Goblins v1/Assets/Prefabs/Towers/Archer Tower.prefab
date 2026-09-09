@@ -80,6 +80,8 @@ MonoBehaviour:
   drawTargetingGizmos: 1
   archerVisual: {fileID: 6457415417647644198}
   arrowSpawnPoint: {fileID: 1147949464609815441}
+  moveDistance: 0.8
+  moveSpeed: 1.5
   archerTurnSpeed: 540
   arrowPrefab: {fileID: 3689641448068031618, guid: 8bacd8775c44b9147984b2718f8298be, type: 3}
   attackCooldown: 0.35

@@ -42,8 +42,7 @@ public class TowerTargetingManager : MonoBehaviour
                 continue;
 
             results.Clear();
-            Enemy enemy = EnemyUtilities.GetClosestEnemy(tower.WorldPosition, tower.GainTargetRange, results);
-            tower.SetTarget(enemy);
+            tower.GetTarget(results);
             queriesPerformed++;
         }
     }

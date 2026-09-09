@@ -202,6 +202,19 @@ public static class Utilities
         return Vector3.Distance(a, b);
     }
 
+    public static bool IsWithinRange(Vector3 a, Vector3 b, float range)
+    {
+        return (a - b).sqrMagnitude <= range * range;
+    }
+
+    public static bool IsWithinHorizontalRange(Vector3 a, Vector3 b, float range)
+    {
+        float xDistance = a.x - b.x;
+        float zDistance = a.z - b.z;
+
+        return xDistance * xDistance + zDistance * zDistance <= range * range;
+    }
+
     public static Vector3 LerpWithArc(Vector3 a, Vector3 b, float height, float t)
     {
         Vector3 p = Vector3.Lerp(a, b, t);                 // straight line

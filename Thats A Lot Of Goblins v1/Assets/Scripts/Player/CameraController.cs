@@ -18,6 +18,10 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float maxZoom = 0f;
     [SerializeField] private Vector3 zoomAxis = Vector3.forward;
 
+    [Header("Zoom Rotation")]
+    [SerializeField] private float minZoomRotation = 35f;
+    [SerializeField] private float maxZoomRotation = 65f;
+
     [Header("Pan")]
     [SerializeField] private float panDamping = 10f;
     [SerializeField] private bool invertPan = false;
@@ -135,5 +139,12 @@ public class CameraController : MonoBehaviour
             targetPos += offset;
             transform.position += offset;
         }
+
+        // Zoom Rotation
+        float currentZoomAmount = Mathf.InverseLerp(minZoom, maxZoom, targetZoom);
+        float targetAngle = Mathf.Lerp(minZoomRotation, maxZoomRotation, currentZoomAmount);
+
+        Quaternion targetRotation = Quaternion.Euler(targetAngle, 0f, 0f);
+        zoomTransform.localRotation = targetRotation;
     }
 }
