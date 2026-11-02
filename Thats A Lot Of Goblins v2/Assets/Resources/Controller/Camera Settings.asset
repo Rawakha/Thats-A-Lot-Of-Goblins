@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af88e16f3d39fef40aadb8bb5fce0718, type: 3}
+  m_Name: Camera Settings
+  m_EditorClassIdentifier: Assembly-CSharp::Camera_Settings
+  pitch: 45
+  yaw: 10
+  distance: 40
+  fieldOfView: 60
+  heightFollow: 0.5
+  speedDistance: 2
+  speedFieldOfView: 7
+  overspeedFieldOfView: 7
+  overspeedDistance: 2
+  lowPitch: -6
+  lowDistance: -6
+  lowCurve: 1.5
+  framingStiffness: 30
+  framingDampingRatio: 0.9
+  followStiffness: 200
+  followDampingRatio: 0.85
+  velocityLead: 0.2
+  inputLead: 3
+  leadStiffness: 20
+  leadDampingRatio: 0.75
+  headingYaw: 15
+  headingStiffness: 2
+  headingDampingRatio: 1
+  rollPerTurnRate: 0.01
+  maxRoll: 1.5
+  traumaDecay: 1.5
+  maxShakeOffset: 0.6
+  maxShakeAngle: 1
+  shakeFrequency: 18
+  rumble: 0.06
+  rumbleHighScale: 0.15
+  rumbleFrequency: 32
+  kickStiffness: 150
+  kickDampingRatio: 0.45

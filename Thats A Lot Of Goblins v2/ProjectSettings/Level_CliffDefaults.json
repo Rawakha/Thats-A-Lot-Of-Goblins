@@ -1,0 +1,113 @@
+{
+    "MonoBehaviour": {
+        "m_Enabled": true,
+        "m_EditorHideFlags": 0,
+        "m_Name": "",
+        "m_EditorClassIdentifier": "Assembly-CSharp::Level_Cliff",
+        "shape": 0,
+        "nodes": [
+            {
+                "position": {
+                    "x": -10.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "height": 6.0,
+                "width": 4.0,
+                "length": 4.0,
+                "turn": 0.0,
+                "lean": 0.0
+            },
+            {
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 3.0
+                },
+                "height": 6.0,
+                "width": 4.0,
+                "length": 4.0,
+                "turn": 0.0,
+                "lean": 0.0
+            },
+            {
+                "position": {
+                    "x": 10.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "height": 6.0,
+                "width": 4.0,
+                "length": 4.0,
+                "turn": 0.0,
+                "lean": 0.0
+            }
+        ],
+        "outerDetail": true,
+        "tiers": 2,
+        "tierInset": 1.0,
+        "blockSize": 4.0,
+        "blockVariation": 0.6000000238418579,
+        "depth": 1.0,
+        "depthSteps": 3,
+        "heightJitter": 1.399999976158142,
+        "pillarChance": 0.0,
+        "stepChance": 0.3499999940395355,
+        "frontChance": 0.3499999940395355,
+        "ledgeChance": 0.05999999865889549,
+        "chunkChance": 0.15000000596046448,
+        "turnJitter": 5.0,
+        "leanJitter": 3.0,
+        "cornerBlocks": false,
+        "seed": 60729,
+        "topRocks": true,
+        "rockDensity": 5.0,
+        "rockSize": {
+            "x": 0.800000011920929,
+            "y": 2.4000000953674316
+        },
+        "rockBlocks": {
+            "x": 2,
+            "y": 12
+        },
+        "rockHeight": {
+            "x": 0.5,
+            "y": 1.2999999523162842
+        },
+        "rockStackChance": 0.05000000074505806,
+        "rockMargin": 0.75,
+        "sideColour": {
+            "r": 0.4000000059604645,
+            "g": 0.3921568691730499,
+            "b": 0.37254902720451355,
+            "a": 1.0
+        },
+        "topColour": {
+            "r": 0.5490196347236633,
+            "g": 0.5372549295425415,
+            "b": 0.5137255191802979,
+            "a": 1.0
+        },
+        "shadeVariation": 0.07999999821186066,
+        "baseDarkening": 0.30000001192092896,
+        "recessDarkening": 0.25,
+        "sideDarkening": 0.11999999731779099,
+        "contactDarkening": 0.0,
+        "textureSize": 4.0,
+        "sideMaterial": {
+            "instanceID": 0
+        },
+        "topMaterial": {
+            "instanceID": 0
+        },
+        "makeCollider": true,
+        "snap": 0.5,
+        "blocks": 0,
+        "vertices": 0,
+        "triangles": 0,
+        "buildMs": 0.0,
+        "mesh": {
+            "instanceID": 0
+        }
+    }
+}

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f31283473fb4e0e44a88838ea25260c6, type: 3}
+  m_Name: Explosion
+  m_EditorClassIdentifier: Assembly-CSharp::SoundData
+  soundConfig:
+    audioClips:
+    - {fileID: 8300000, guid: 8bd73665cc0097e40bd92c4e7be416b0, type: 3}
+    - {fileID: 8300000, guid: cb9564dd93da971468413691f653bb1f, type: 3}
+    - {fileID: 8300000, guid: 40a39c2e55b744d4bbb4efc758811a78, type: 3}
+    priority: 0
+    volume: 1
+    pitch: 1
+    loopSound: 0
+    additive: 1
+    spatialBlend: 0
+    pitchRange: 0.1
+    volumeRange: 0.1

@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5677b1ab2a9cd8545806ede332d4cd0a, type: 3}
+  m_Name: Wave Settings
+  m_EditorClassIdentifier: Assembly-CSharp::Wave_Settings
+  goblinType: {fileID: 11400000, guid: 019a78a225582f6408ca8155966efa90, type: 2}
+  firstWaveGoblins: 1000
+  extraGoblinsPerWave: 5
+  growthPerWave: 0
+  maxGoblinsPerWave: 0
+  minHoles: 1
+  wavesPerExtraHole: 5
+  maxHoles: 0
+  minTargetDistance: 30
+  lastWave: 0
+  waitForInput: 1
+  firstWaveDelay: 1
+  timeBetweenWaves: 1
+  spawnInterval: 0.12
+  hopDistance: {x: 1, y: 4}
+  hopHeight: {x: 2.5, y: 3.5}
+  hopDuration: {x: 0.45, y: 0.65}
+  hopEase: 1
+  hopTowardTarget: 0.3
+  flipChance: 0.25
+  flipDegrees: 360
+  preview: 'Wave  1:  1000 goblins,  1 hole
+
+    Wave  2:  1005 goblins,  1 hole
+
+    Wave  3:  1010 goblins,  1 hole
+
+    Wave  4:  1015 goblins,  1 hole
+
+    Wave  5:  1020 goblins,  1 hole
+
+    Wave  6:  1025 goblins,  1-2 holes
+
+    Wave  7:  1030 goblins,  1-2 holes
+
+    Wave  8:  1035 goblins,  1-2 holes
+
+    Wave  9:  1040 goblins,  1-2 holes
+
+    Wave 10:  1045 goblins,  1-2 holes
+
+    Wave 11:  1050 goblins,  1-3 holes
+
+    Wave 12:  1055 goblins,  1-3 holes
+
+    Wave 13:  1060 goblins,  1-3 holes
+
+    Wave 14:  1065 goblins,  1-3 holes
+
+    Wave 15:  1070 goblins,  1-3 holes
+
+    Wave 16:  1075 goblins,  1-4 holes
+
+    Wave 17:  1080 goblins,  1-4 holes
+
+    Wave 18:  1085 goblins,  1-4 holes
+
+    Wave 19:  1090 goblins,  1-4 holes
+
+    Wave 20:  1095 goblins,  1-4 holes
+
+    ... and on for ever'

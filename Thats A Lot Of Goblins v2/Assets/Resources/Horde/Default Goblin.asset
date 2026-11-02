@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3b12ba140e28c640ae0a91220122005, type: 3}
+  m_Name: Default Goblin
+  m_EditorClassIdentifier: Assembly-CSharp::Horde_GoblinType
+  prefab: {fileID: 8124204278089296166, guid: dfd18336457e36b43b9b660ddadfb1b7, type: 3}
+  bodyScale: {x: 1, y: 1, z: 1}
+  headScale: {x: 1, y: 1, z: 1}
+  bodySizeRange: {x: 0.9, y: 1.15}
+  bodyShapeRange: {x: 0.9, y: 1.1}
+  headSizeRange: {x: 0.85, y: 1.2}
+  baseColors:
+  - {r: 0.43529412, g: 0.48235294, b: 0.16470589, a: 1}
+  - {r: 0.3529412, g: 0.48235294, b: 0.16470589, a: 1}
+  - {r: 0.24705882, g: 0.48235294, b: 0.2901961, a: 1}
+  - {r: 0.24705882, g: 0.48235294, b: 0.3796876, a: 1}
+  hueRange: {x: -0.03, y: 0.03}
+  saturationRange: {x: 0.9, y: 1.1}
+  valueRange: {x: 0.8, y: 1.15}
+  animation: {fileID: 11400000, guid: 83315c0a19eee3f41bd22915ceb6b7f9, type: 2}
+  maxHealth: 3
+  hitForce: 1
+  damageSound: {fileID: 11400000, guid: 864d5971f3181014085f0b6dbaabbc24, type: 2}
+  extraDamageSounds: []
+  deathTipAngle: 85
+  deathTipStiffness: 60
+  deathTipDamping: 0.5
+  deathTipKick: 250
+  deathTipEdge: 0
+  deathTipBounce: 0.3
+  deathShrinkDelay: 2
+  deathDuration: 0.35
+  deathEase: 26
+  deathEaseOvershoot: 1.70158
+  burstDuration: 0.12
+  burstEffect: {fileID: 0}
+  burstSound: {fileID: 0}
+  screamSound: {fileID: 0}
+  screamFullHeight: 6
+  screamMinVolume: 0.25
+  launchTorque: 0.05
+  shadows: 1
+  receiveShadows: 1
+  poolSize: 200
+  moveSpeed: 3
+  speedVariation: 0.1
+  acceleration: 15
+  turnSpeed: 360
+  steerSpread: 12
+  turnMinSpeed: 0.2
+  solverIterations: 2
+  solverVelocityIterations: 1
+  mass: 1
+  radius: 0.35
+  height: 1

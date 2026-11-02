@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 395c0bb05f0c43444b28faf981ed65ac, type: 3}
+  m_Name: UI Sway Settings
+  m_EditorClassIdentifier: Assembly-CSharp::UI_SwaySettings
+  turnOffset: 10
+  turnTilt: 2
+  speedOffset: 6
+  fullAcceleration: 8
+  accelerationSmoothing: 6
+  diveSpread: 8
+  fullDiveSpeed: 10
+  offsetSpring:
+    strength: 120
+    damper: 12
+  tiltSpring:
+    strength: 120
+    damper: 12
+  maxOffset: 30

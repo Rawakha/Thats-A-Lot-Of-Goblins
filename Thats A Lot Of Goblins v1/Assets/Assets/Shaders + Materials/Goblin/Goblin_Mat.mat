@@ -78,6 +78,7 @@ Material:
     - _QueueOffset: 0
     - _Smoothness: 0.2
     - _TopStrength: 0
+    - _UseVertex: 1
     - _WobbleAmount: 0.04
     - _WobbleBaseY: 0
     - _WobblePhaseScale: 1.7

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 375e3ea50b7da164394fe193f84f84c0, type: 3}
+  m_Name: Plane Effects Settings
+  m_EditorClassIdentifier: Assembly-CSharp::Plane_EffectsSettings
+  speedLinesStart: 0.5
+  speedLinesLowBoost: 1.5
+  speedLinesDiveBoost: 0.5
+  speedLinesResponse: 6
+  trailSpeedStart: 0.6
+  trailTurnStart: 0.4
+  trailOuterBoost: 0.5
+  trailMinStrength: 0.05
+  trailResponse: 8

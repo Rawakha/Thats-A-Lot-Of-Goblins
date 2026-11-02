@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f31283473fb4e0e44a88838ea25260c6, type: 3}
+  m_Name: HitMarker
+  m_EditorClassIdentifier: Assembly-CSharp::SoundData
+  soundConfig:
+    audioClips:
+    - {fileID: 8300000, guid: 41826ca0af9dfa94cb382d8b12335753, type: 3}
+    - {fileID: 8300000, guid: 92e6f9e3df330f342b5dd337d4fef9a0, type: 3}
+    priority: 1
+    volume: 0.4
+    pitch: 1
+    loopSound: 0
+    additive: 1
+    spatialBlend: 0.9
+    pitchRange: 0.5
+    volumeRange: 0.05

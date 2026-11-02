@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c43e3b3cb0ed5674a8b292973bed3ca6, type: 3}
+  m_Name: UI Message Set
+  m_EditorClassIdentifier: Assembly-CSharp::UI_MessageSet
+  context: 0
+  minKills: 1
+  cooldown: 0.05
+  lines:
+  - BOOOOOM
+  - KABOOM
+  - KA-BLAMMO
+  - SPLAT
+  - YEET
+  - AIRMAIL
+  - SPECIAL DELIVERY
+  - FREE FLIGHTS
+  - GOBLIN CONFETTI
+  - NOBODY ORDERED THAT
+  - SEE YOU NEVER
+  - LIFTOFF
+  - PARTY'S OVER
+  colour: {r: 1, g: 0.7, b: 0.15, a: 1}
+  baseSize: 1
+  sizePerKill: 0.04
+  maxSize: 1.8
+  darkChance: 0.15
+  darkMinKills: 4
+  darkLines:
+  - WIPED OUT THE DURSLEYS
+  - FAMILY REUNION CANCELLED
+  - THE WILL IS NOW VOID
+  - NOBODY LEFT TO INHERIT
+  - THE FAMILY TREE IS A STUMP
+  - THE GROUP CHAT WENT QUIET
+  - NO ONE'S PICKING UP THE KIDS
+  - SOMEONE'S MUM IS CALLING
+  - CLOSED CASKET
+  - BULK DISCOUNT AT THE FUNERAL HOME
+  - CHRISTMAS IS CANCELLED
+  - THE DOG IS WAITING BY THE DOOR
+  darkColour: {r: 0.85, g: 0.15, b: 0.2, a: 1}
+  darkSize: 1.3
+  darkHold: 1

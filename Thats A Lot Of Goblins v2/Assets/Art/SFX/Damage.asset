@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f31283473fb4e0e44a88838ea25260c6, type: 3}
+  m_Name: Damage
+  m_EditorClassIdentifier: Assembly-CSharp::SoundData
+  soundConfig:
+    audioClips:
+    - {fileID: 8300000, guid: c822b64915e645845a69e4a883bdff25, type: 3}
+    - {fileID: 8300000, guid: 35eba19af31829c46a6e8c621d3bf4a2, type: 3}
+    - {fileID: 8300000, guid: c5118b6fbae81954fb9f3320901551ba, type: 3}
+    - {fileID: 8300000, guid: f1758d916ed399740a7ab7f86a3e70fa, type: 3}
+    - {fileID: 8300000, guid: 0861bf120504495438cffb4b263cc89c, type: 3}
+    - {fileID: 8300000, guid: ce63b793fab41d2498c886e30db8c00a, type: 3}
+    - {fileID: 8300000, guid: f6c356b150c627848a55ae9222806020, type: 3}
+    - {fileID: 8300000, guid: 5fd70ff2fa9c60a4a983168a8da6bd50, type: 3}
+    priority: 1
+    volume: 0.1
+    pitch: 1
+    loopSound: 0
+    additive: 1
+    spatialBlend: 0.5
+    pitchRange: 0.35
+    volumeRange: 0.01

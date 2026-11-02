@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c045732dd8cfa3642afa780299925458, type: 3}
+  m_Name: Plane Audio Settings
+  m_EditorClassIdentifier: Assembly-CSharp::Plane_AudioSettings
+  mixerGroup: {fileID: 0}
+  spatialBlend: 0.7
+  fadeInTime: 1
+  engineLow: {fileID: 11400000, guid: 9b3a26354b4d40538d1764007c158855, type: 2}
+  engineHigh: {fileID: 11400000, guid: 2ad8c43645e14e73a27398d53145e143, type: 2}
+  enginePitchIdle: 0.75
+  enginePitchTop: 1.3
+  enginePitchPerAcceleration: 0.03
+  engineDescentPitch: 0.12
+  engineResponse: 5
+  wind: {fileID: 11400000, guid: d391f8f471a1458abc75b7b530b1c060, type: 2}
+  windLowBoost: 1.2
+  windTurnBoost: 0.5
+  windPitchSlow: 0.8
+  windPitchTop: 1.2
+  windResponse: 4
+  turnWhoosh: {fileID: 0}
+  whooshThreshold: 0.65
+  whooshReset: 0.3
+  whooshCooldown: 0.6

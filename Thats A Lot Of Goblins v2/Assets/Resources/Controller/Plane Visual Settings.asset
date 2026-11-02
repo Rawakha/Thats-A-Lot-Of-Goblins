@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54e0fcb53b13b0a4e8207172e809fa10, type: 3}
+  m_Name: Plane Visual Settings
+  m_EditorClassIdentifier: Assembly-CSharp::Plane_VisualSettings
+  bankPerTurnRate: 0.15
+  maxBank: 35
+  bankStiffness: 10
+  bankDampingRatio: 0.35
+  pitchPerVerticalSpeed: 3.5
+  maxPitch: 40
+  pitchStiffness: 150
+  pitchDampingRatio: 0.55
+  turnSink: 0.15
+  swayHeight: 0.4
+  swaySide: 0.3
+  swayFrequency: 0.3
+  swaySideFrequency: 0.7
+  swayPitch: 6
+  swayRoll: 14
+  swayYaw: 5
+  turbulenceRoll: 1.5
+  turbulencePitch: 0.8
+  turbulenceFrequency: 0.9
+  swayTurnQuiet: 0.3
+  swayDiveQuiet: 0.4
+  stretchPerAcceleration: 0.006
+  squashPerVerticalAcceleration: 0.0006
+  maxSquash: 0.05
+  squashWidth: 0.5
+  squashStiffness: 250
+  squashDampingRatio: 0.4
+  kickStiffness: 200
+  kickDampingRatio: 0.35
+  propellerIdleSpeed: 1200
+  propellerSpeedPerUnit: 60
+  maxAileron: 45
+  maxRudder: 40
+  surfaceResponse: 14

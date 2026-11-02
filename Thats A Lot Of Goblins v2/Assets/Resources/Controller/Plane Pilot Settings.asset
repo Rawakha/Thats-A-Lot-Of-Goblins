@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2df16e7004dad5c459687ec8990dfb29, type: 3}
+  m_Name: Plane Pilot Settings
+  m_EditorClassIdentifier: Assembly-CSharp::Plane_PilotSettings
+  lookPerDegree: 0.6
+  lookPerTurnRate: 0.15
+  maxLookYaw: 55
+  diveLookDown: 18
+  counterRoll: 12
+  lookStiffness: 160
+  lookDampingRatio: 0.6
+  accelerationSmoothing: 15
+  bodyLeanPerAcceleration: 0.25
+  maxBodyLean: 14
+  bodyShiftPerAcceleration: 0.0015
+  maxBodyShift: 0.06
+  bodyStiffness: 120
+  bodyDampingRatio: 0.45
+  headLeanPerAcceleration: 0.35
+  maxHeadLean: 20
+  headRotationLag: 0.05
+  headWobbleStiffness: 90
+  headWobbleDampingRatio: 0.3
+  breathHeight: 0.012
+  breathRate: 0.3
+  breathNod: 1.5
+  buffetAngle: 1.2
+  buffetLowBoost: 1.8
+  buffetFrequency: 9

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f31283473fb4e0e44a88838ea25260c6, type: 3}
+  m_Name: Machine Gun Shot
+  m_EditorClassIdentifier: Assembly-CSharp::SoundData
+  soundConfig:
+    audioClips:
+    - {fileID: 8300000, guid: cc98cd81fd4187c478280b38b7988dc9, type: 3}
+    - {fileID: 8300000, guid: 214dd29e451bacb4e9557d6b195d335b, type: 3}
+    priority: 1
+    volume: 1
+    pitch: 1
+    loopSound: 0
+    additive: 1
+    spatialBlend: 1
+    pitchRange: 0.25
+    volumeRange: 0.1
