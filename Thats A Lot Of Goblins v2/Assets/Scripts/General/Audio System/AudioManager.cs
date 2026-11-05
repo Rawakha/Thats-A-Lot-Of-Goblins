@@ -483,6 +483,12 @@ public class AudioManager : MonoBehaviour
             tracked[index].Source.volume = tracked[index].BaseVolume * Mathf.Clamp01(normalized);
     }
 
+    public bool IsTrackedPlaying(int handle)
+    {
+        int index = FindTracked(handle);
+        return index >= 0 && tracked[index].Source.isPlaying;
+    }
+
     public void StopTracked(int handle)
     {
         int index = FindTracked(handle);

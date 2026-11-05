@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f31283473fb4e0e44a88838ea25260c6, type: 3}
+  m_Name: Goblin Scream
+  m_EditorClassIdentifier: Assembly-CSharp::SoundData
+  soundConfig:
+    audioClips:
+    - {fileID: 8300000, guid: 2978b93211eeb1e459acd742a191c8d0, type: 3}
+    - {fileID: 8300000, guid: 1ab5c527e00aed0428d4317a577adc4a, type: 3}
+    - {fileID: 8300000, guid: 2f995237e5315444580ecfba2d03570d, type: 3}
+    - {fileID: 8300000, guid: 56a07e224c219a54eb2c817d71df0b46, type: 3}
+    priority: 0
+    volume: 1
+    pitch: 1.5
+    loopSound: 0
+    additive: 1
+    spatialBlend: 0.5
+    pitchRange: 0.2
+    volumeRange: 0.1

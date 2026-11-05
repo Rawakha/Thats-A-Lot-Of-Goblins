@@ -69,6 +69,35 @@ public static class Level_Menu
         Selection.activeGameObject = area;
     }
 
+    // A grass painter where the Scene view is looking. Assign a material on Goblins/Grass, then press Paint Grass.
+    [MenuItem("GameObject/Level/Grass", false, 41)]
+    private static void CreateGrass(MenuCommand command)
+    {
+        GameObject grass = new GameObject("Grass");
+        GameObjectUtility.SetParentAndAlign(grass, command.context as GameObject);
+        Undo.RegisterCreatedObjectUndo(grass, "Create Grass");
+        Level_Grass component = Undo.AddComponent<Level_Grass>(grass);
+
+        // Its material: the shared purple one, made the first time
+        Material material = AssetDatabase.LoadAssetAtPath<Material>(GrassMaterialPath);
+        Shader shader = Shader.Find("Goblins/Grass");
+
+        if (material == null && shader != null)
+        {
+            material = new Material(shader) { name = "Grass_Mat", enableInstancing = true };
+            AssetDatabase.CreateAsset(material, GrassMaterialPath);
+        }
+
+        SerializedObject serialized = new SerializedObject(component);
+        serialized.FindProperty("material").objectReferenceValue = material;
+        serialized.ApplyModifiedPropertiesWithoutUndo();
+        component.Reload();
+
+        Selection.activeGameObject = grass;
+    }
+
+    private const string GrassMaterialPath = "Assets/Art/Level/Grass/Grass_Mat.mat";
+
     private const string CliffMaterialPath = "Assets/Art/Level/Cliff_Mat.mat";
 
     [MenuItem("GameObject/Level/Cliff Line", false, 32)]

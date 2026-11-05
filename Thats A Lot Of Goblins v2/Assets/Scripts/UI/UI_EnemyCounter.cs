@@ -7,19 +7,25 @@ using UnityEngine;
 // with its own pop.
 //
 // Setup: put this on the counter text (with a UI_Shadowed for its shadow and a UI_Punch for the kicks), assign the
-// Wave_Director, the text's UI_Shadowed and the UI_Punch.
+// text's UI_Shadowed and the UI_Punch. It finds each area's Wave_Director as the area loads.
 //
-// GC: none per frame (TMP's SetText with a number doesn't allocate). One UpdateManager subscription (OnLateUpdate) and
-// one to Wave_Director.GoblinKilled.
+// GC: none per frame (TMP's SetText with a number doesn't allocate). One UpdateManager subscription (OnLateUpdate), one
+// to Area_Root.Changed and one to the current Wave_Director.GoblinKilled.
 public class UI_EnemyCounter : MonoBehaviour
 {
-    [SerializeField] private Wave_Director director;
+    private Wave_Director director;
 
     [Tooltip("The counter text (UI_Shadowed on it, so its shadow matches).")]
     [SerializeField] private UI_Shadowed text;
 
     [Tooltip("Kicks the counter: usually a UI_Punch on the text.")]
     [SerializeField] private UI_Punch punch;
+
+    [Tooltip("An icon beside the number (UI_Shadowed on it). Flashes the same colour as the number. Optional.")]
+    [SerializeField] private UI_Shadowed icon;
+
+    [Tooltip("Kicks the icon with the number: a UI_Punch on the icon. Optional.")]
+    [SerializeField] private UI_Punch iconPunch;
 
     [Tooltip("{0} is the number left, e.g. \"{0}\" or \"GOBLINS {0}\".")]
     [SerializeField] private string format = "{0}";
@@ -57,6 +63,7 @@ public class UI_EnemyCounter : MonoBehaviour
     private int shown = -1;
     private int killsThisFrame;
     private Color baseColour = Color.white;
+    private Color iconBaseColour = Color.white;
     private float flash;            // 0-1, fading out
     private float flashStrength;
 
@@ -64,17 +71,21 @@ public class UI_EnemyCounter : MonoBehaviour
     {
         if (text != null && text.Main != null)
             baseColour = text.Main.color;
+
+        if (icon != null && icon.Main != null)
+            iconBaseColour = icon.Main.color;
     }
 
     private void OnEnable()
     {
-        if (director == null || text == null)
+        if (text == null)
         {
-            Debug.LogWarning($"{name}: UI_EnemyCounter needs a Wave_Director and a UI_Shadowed text.", this);
+            Debug.LogWarning($"{name}: UI_EnemyCounter needs a UI_Shadowed text.", this);
             return;
         }
 
-        director.GoblinKilled += OnKilled;
+        Area_Root.Changed += Bind;
+        Bind(Area_Root.Current);
 
         if (UpdateManager.Instance != null)
             UpdateManager.Instance.OnLateUpdate += Tick;
@@ -82,11 +93,25 @@ public class UI_EnemyCounter : MonoBehaviour
 
     private void OnDisable()
     {
-        if (director != null)
-            director.GoblinKilled -= OnKilled;
+        Area_Root.Changed -= Bind;
+        Bind(null);
 
         if (UpdateManager.Instance != null)
             UpdateManager.Instance.OnLateUpdate -= Tick;
+    }
+
+    // A new area loaded (or the old one went, with null)
+    private void Bind(Area_Root root)
+    {
+        if (director != null)
+            director.GoblinKilled -= OnKilled;
+
+        director = root != null ? root.Director : null;
+        shown = -1;
+        killsThisFrame = 0;
+
+        if (director != null)
+            director.GoblinKilled += OnKilled;
     }
 
     private void OnKilled(Horde_Goblin goblin)
@@ -96,6 +121,9 @@ public class UI_EnemyCounter : MonoBehaviour
 
     private void Tick()
     {
+        if (director == null)
+            return;
+
         int left = director.Alive + director.ToSpawn;
         int kills = killsThisFrame;
         killsThisFrame = 0;
@@ -107,14 +135,17 @@ public class UI_EnemyCounter : MonoBehaviour
             shown = left;
             text.SetText(format, left);
 
-            if (!first && punch != null)
+            if (!first)
             {
-                if (!down)
-                    punch.Punch(refillPunch);
-                else if (kills > 0)
-                    punch.Punch(Mathf.Min(killPunch + punchPerKill * (kills - 1), maxPunch));
-                else
-                    punch.Punch(escapePunch);
+                float strength = !down ? refillPunch
+                    : kills > 0 ? Mathf.Min(killPunch + punchPerKill * (kills - 1), maxPunch)
+                    : escapePunch;
+
+                if (punch != null)
+                    punch.Punch(strength);
+
+                if (iconPunch != null)
+                    iconPunch.Punch(strength);
             }
 
             if (down && kills > 0)
@@ -135,6 +166,10 @@ public class UI_EnemyCounter : MonoBehaviour
             return;
 
         flash = Mathf.Max(0f, flash - deltaTime / flashDuration);
-        text.SetColor(Color.Lerp(baseColour, flashColour, flash * flashStrength));
+        float amount = flash * flashStrength;
+        text.SetColor(Color.Lerp(baseColour, flashColour, amount));
+
+        if (icon != null)
+            icon.SetColor(Color.Lerp(iconBaseColour, flashColour, amount));
     }
 }

@@ -92,20 +92,16 @@ public class Horde_GoblinType : ScriptableObject
     [Tooltip("How its body and head hop, lean and bobble. Empty: goblins hold their prefab pose.")]
     public Horde_AnimationSettings animation;
 
+    [Header("Audio")]
+    [Tooltip("Every sound this goblin makes (Goblins/Goblin Audio). Empty is silent.")]
+    public Horde_GoblinAudio audio;
+
     [Header("Health")]
     [Tooltip("Damage it takes to kill. A machine gun bullet does 1 by default.")]
     [Min(0.01f)] public float maxHealth = 3f;
 
     [Tooltip("Hit reaction force per point of damage. Bigger = bigger flinch.")]
     [Min(0f)] public float hitForce = 1f;
-
-    [Tooltip("Played where a goblin is hurt, on every hit (the killing one too). Limited per frame by Horde_System's " +
-             "Max Damage Sounds Per Frame, so a blast or a long burst doesn't stack hundreds. Optional.")]
-    public SoundData damageSound;
-
-    [Tooltip("Extra sounds a hit might set off as well, each on its own chance (a groan, a yelp). Every hit rolls " +
-             "each one. Limited per frame by Horde_System's Max Extra Damage Sounds Per Frame.")]
-    public Horde_ChanceSound[] extraDamageSounds;
 
     [Header("Death")]
     [Tooltip("Degrees a killed goblin tips over, falling away from the killing hit, pivoting at its feet.")]
@@ -127,11 +123,16 @@ public class Horde_GoblinType : ScriptableObject
     [Tooltip("How much it bounces back up off the ground if it falls flat (90°). 0 stops dead.")]
     [Range(0f, 1f)] public float deathTipBounce = 0.3f;
 
-    [Tooltip("Seconds it lies there before it starts to shrink, so the fall can be seen. A goblin killed in the air " +
-             "starts counting once it has landed and come to rest.")]
-    [Min(0f)] public float deathShrinkDelay = 0.3f;
+    [Tooltip("Corpse brightness, as a share of its living colour, so a pile doesn't read as a living crowd.")]
+    [Range(0f, 1f)] public float corpseBrightness = 0.55f;
 
-    [Tooltip("Seconds it takes to shrink away, after the delay.")]
+    [Tooltip("How much of its colour a corpse loses: 0 keeps it, 1 is fully grey.")]
+    [Range(0f, 1f)] public float corpseGrey = 0.4f;
+
+    [Tooltip("Seconds a corpse takes to dim, from when it lies down.")]
+    [Min(0f)] public float corpseDimTime = 0.8f;
+
+    [Tooltip("Seconds it takes to shrink away, when its turn comes (how long it lies there first is in Horde_DebrisBudget).")]
     [Min(0.01f)] public float deathDuration = 0.35f;
 
     [Tooltip("How it shrinks (DOTween ease, from full size to nothing). InBack swells a little first, then pops.")]
@@ -147,22 +148,33 @@ public class Horde_GoblinType : ScriptableObject
 
     [Tooltip("Played where a goblin is blown apart (gore, confetti, a puff). Optional.")]
     public Effect_Hit burstEffect;
-    public SoundData burstSound;
 
     [Header("Flung")]
-    [Tooltip("Looping scream while flung through the air (like v1), following the goblin and quieter as it comes " +
-             "down. Limited by the AudioManager's tracked sound slots, so a big blast doesn't stack hundreds.")]
-    public SoundData screamSound;
+    [Tooltip("Where the scream particles come out, in the goblin's own space: its mouth (v1's spot to start).")]
+    public Vector3 mouthPosition = new Vector3(0.016f, 0.88f, 0.33f);
 
-    [Tooltip("Height above the ground at which the scream is at full volume, metres.")]
-    [Min(0.1f)] public float screamFullHeight = 6f;
-
-    [Tooltip("Scream volume just before it lands, as a share of full.")]
-    [Range(0f, 1f)] public float screamMinVolume = 0.25f;
+    [Tooltip("Which way the scream particles point from the mouth, degrees in the goblin's own space.")]
+    public Vector3 mouthRotation = new Vector3(-30f, 0f, 0f);
 
     [Tooltip("Thrown goblins get one torque impulse round the axis square to the throw (so they tip forward over the " +
              "way they're thrown), this much per m/s of the throw: v1's flick torque. Physics does the rest.")]
     [Min(0f)] public float launchTorque = 0.25f;
+
+    [Header("Landing")]
+    [Tooltip("Spin damping while flying, so it tumbles freely through the air.")]
+    [Min(0f)] public float airAngularDamping = 0.05f;
+
+    [Tooltip("Spin damping once it has hit the ground, so it slams, skids and stops instead of spinning on the floor.")]
+    [Min(0f)] public float groundAngularDamping = 8f;
+
+    [Tooltip("Share of its spin kept at the moment it hits the ground.")]
+    [Range(0f, 1f)] public float impactSpinKeep = 0.15f;
+
+    [Tooltip("Landing slower than this (m/s, downward) does no fall damage.")]
+    [Min(0f)] public float safeFallSpeed = 8f;
+
+    [Tooltip("Fall damage per m/s of landing speed above Safe Fall Speed. Tougher goblins can survive the fall.")]
+    [Min(0f)] public float fallDamagePerSpeed = 0.3f;
 
     [Header("Rendering")]
     public UnityEngine.Rendering.ShadowCastingMode shadows = UnityEngine.Rendering.ShadowCastingMode.On;

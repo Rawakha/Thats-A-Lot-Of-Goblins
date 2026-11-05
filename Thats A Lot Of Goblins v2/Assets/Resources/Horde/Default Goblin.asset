@@ -18,6 +18,9 @@ MonoBehaviour:
   bodySizeRange: {x: 0.9, y: 1.15}
   bodyShapeRange: {x: 0.9, y: 1.1}
   headSizeRange: {x: 0.85, y: 1.2}
+  eyeSizeRange: {x: 0.9, y: 1.1}
+  eyeAsymmetryChance: 0.25
+  eyeAsymmetryRange: {x: 0.15, y: 0.35}
   baseColors:
   - {r: 0.43529412, g: 0.48235294, b: 0.16470589, a: 1}
   - {r: 0.3529412, g: 0.48235294, b: 0.16470589, a: 1}
@@ -29,28 +32,32 @@ MonoBehaviour:
   animation: {fileID: 11400000, guid: 83315c0a19eee3f41bd22915ceb6b7f9, type: 2}
   maxHealth: 3
   hitForce: 1
-  damageSound: {fileID: 11400000, guid: 864d5971f3181014085f0b6dbaabbc24, type: 2}
-  extraDamageSounds: []
+  audio: {fileID: 11400000, guid: b84d2f17c6e94a03915fe2a8d07c3e56, type: 2}
   deathTipAngle: 85
   deathTipStiffness: 60
   deathTipDamping: 0.5
   deathTipKick: 250
   deathTipEdge: 0
   deathTipBounce: 0.3
-  deathShrinkDelay: 2
+  corpseBrightness: 0.5
+  corpseGrey: 0.3
+  corpseDimTime: 0.8
   deathDuration: 0.35
   deathEase: 26
   deathEaseOvershoot: 1.70158
   burstDuration: 0.12
   burstEffect: {fileID: 0}
-  burstSound: {fileID: 0}
-  screamSound: {fileID: 0}
-  screamFullHeight: 6
-  screamMinVolume: 0.25
+  mouthPosition: {x: 0.016, y: 0.88, z: 0.33}
+  mouthRotation: {x: -30, y: 0, z: 0}
   launchTorque: 0.05
+  airAngularDamping: 0.05
+  groundAngularDamping: 8
+  impactSpinKeep: 0.15
+  safeFallSpeed: 8
+  fallDamagePerSpeed: 0.3
   shadows: 1
   receiveShadows: 1
-  poolSize: 200
+  poolSize: 1000
   moveSpeed: 3
   speedVariation: 0.1
   acceleration: 15

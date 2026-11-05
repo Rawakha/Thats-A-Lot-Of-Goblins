@@ -11,6 +11,10 @@ public interface Weapon_IAmmo
 
     // When Ammo, MagazineSize or Reloading changes (not every frame of a reload)
     event Action AmmoChanged;
+
+    // Starts a reload early (the player pressed Reload). False if there's nothing to do: full, bottomless or already
+    // reloading.
+    bool TryReload();
 }
 
 // Muzzles that fire together as one shot
@@ -27,7 +31,8 @@ public struct Weapon_MuzzleGroup
 // rates stay evenly spaced.
 //
 // Magazine: each shot (not each muzzle) uses one round of Magazine Size. When it runs dry the gun reloads by itself
-// over Reload Time, then fires again; there's no manual reload. A Magazine Size of 0 never runs out.
+// over Reload Time, then fires again. Reload (R) starts one early from any count below full; the rounds left are
+// kept until it finishes, then the magazine is full. A Magazine Size of 0 never runs out.
 //
 // Other fast-firing guns can reuse this with different stats, models and muzzles. A gun that behaves differently
 // gets its own Equip_Item subclass in the Weapon slot, replacing this one when picked.
@@ -269,16 +274,30 @@ public class Weapon_MachineGun : Equip_Item, Weapon_IAmmo
         ammo = Mathf.Max(0, ammo - 1);
 
         if (ammo == 0)
-        {
-            float time = Stats[Equip_Stat.ReloadTime];
-
-            if (time > 0f)
-                reloadLeft = time;
-            else
-                ammo = MagazineSize;
-        }
+            StartReload();
 
         AmmoChanged?.Invoke();
+    }
+
+    public bool TryReload()
+    {
+        if (MagazineSize <= 0 || Reloading || ammo >= MagazineSize)
+            return false;
+
+        StartReload();
+        AmmoChanged?.Invoke();
+        return true;
+    }
+
+    // Over Reload Time, or straight away with none
+    private void StartReload()
+    {
+        float time = Stats[Equip_Stat.ReloadTime];
+
+        if (time > 0f)
+            reloadLeft = time;
+        else
+            ammo = MagazineSize;
     }
 
     private void PlaySound(SoundData data)

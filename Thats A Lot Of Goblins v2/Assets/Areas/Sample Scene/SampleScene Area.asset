@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c1e4a9d2b6f4e38a05d91c3f7e2b846, type: 3}
+  m_Name: SampleScene Area
+  m_EditorClassIdentifier: Assembly-CSharp::Area_Settings
+  areaName: Sample Area
+  waves: {fileID: 11400000, guid: 19045075824dc20458eace6e9925621e, type: 2}
+  startingHealth: 20
+  healthBack: 0.5

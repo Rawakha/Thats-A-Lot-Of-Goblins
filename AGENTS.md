@@ -9,6 +9,7 @@ This project is mainly built with Claude; you're picking up where it left off. E
 1. **`Thats A Lot Of Goblins v2/CLAUDE.md`**: the project brief, code conventions and working rules. They apply to you exactly as written (the user commits, one module at a time, spec before code, `UpdateManager` instead of `Update()`, GC tracking, `System_ScriptName` naming).
 2. **`Thats A Lot Of Goblins v2/Docs/State.md`**: what's built, the current module and how far it's got, the queue, and editor setup still to do. Start from "Current module".
 3. **`Thats A Lot Of Goblins v2/Docs/Decisions.md`**: choices already settled. Don't undo them without asking the user.
+4. **`Thats A Lot Of Goblins v2/Docs/Ideas.md`**: unbuilt ideas (don't build from it without asking). `Docs/Marketing.md` is posting notes, only for marketing tasks.
 
 The root `CLAUDE.md` describes v1 (Goblin TD); ignore it for v2 work.
 

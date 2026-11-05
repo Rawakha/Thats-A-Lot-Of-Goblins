@@ -47,7 +47,7 @@ public class Wave_Settings : ScriptableObject
     [Min(0f)] public float minTargetDistance = 30f;
 
     [Header("Waves")]
-    [Tooltip("The last wave. 0 keeps going for ever.")]
+    [Tooltip("The last wave: clearing it clears the area. 0 keeps going for ever, so the area never clears.")]
     [Min(0)] public int lastWave = 0;
 
     [Header("Timing")]

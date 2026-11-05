@@ -243,6 +243,8 @@ public class Combat_Projectiles : MonoBehaviour
                 Damage = projectile.Damage,
                 FlingOut = type.flingOut,
                 FlingUp = type.flingUp,
+                InstantDeathInner = type.instantDeathInner,
+                InstantDeathOuter = type.instantDeathOuter,
                 Source = projectile.Source
             });
 

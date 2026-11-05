@@ -4,22 +4,23 @@ Unity 6000.6 (URP, Input System, DOTween), solo dev, ~30 hrs/week. Arcade plane 
 Release: Steam first, then a premium (paid, no ads or IAP) mobile port. Keep controls device-agnostic and heavy effects behind quality settings so the port stays possible.
 Pitch: the goblins have taken the Earth; you're the last pilot, and you kill every last goblin. A "Goblins remaining" counter is always on screen.
 
-**Before doing anything, read `Docs/State.md`** (what's built, what's in progress, what's next) and skim `Docs/Decisions.md` (things already settled; don't undo them without asking).
+**Before doing anything, read `Docs/State.md`** (what's built, what's in progress, what's next) and skim `Docs/Decisions.md` (things already settled; don't undo them without asking). `Docs/Ideas.md` is a parking lot of unbuilt ideas (don't build from it without asking) and `Docs/Marketing.md` holds posting notes (only for marketing tasks; never post for the user). In a **manager chat** (the user will say so), read `Docs/Manager.md` first: the manager plans and reviews, it doesn't build.
 
-V1 (`../Thats A Lot Of Goblins v1`) is a read-only reference for old systems. Copy and adapt into V2, never edit v1, never reference it across projects.
+All work happens in this V2 project. Ignore the old V1 folder (`../Thats A Lot Of Goblins v1`): don't read, edit or reference it.
 
-## Game direction: Brotato-style roguelite (settled 2026-11-02)
-A run is a chain of small areas. It must be super juicy.
-- **An area:** a small map with several holes. Waves of goblins pour out of the holes and walk (flow field) to goals; you fly around shooting them.
-- **Clearing an area:** once its waves are done, fly to the next edge (a screen-space indicator points the way). The screen fades to black and you're in the next area.
-- **Upgrades along the way:**
-  - "pick 1 of 3" cards, which give ability charges (consumables, e.g. 2x Ice Wall Bomb) and passives;
-  - **Bloons TD-style upgrade paths** per weapon: several paths, and you choose how far down each one to go.
-- **Weapons are swapped between** (about 3 at once); abilities are used up and replaced from the cards.
+## Game direction: a run-based pick-3 loop (current design: `Docs/Run_Loop_Brief.md`, manager, 2026-11-04)
+The first playable loop, built to test whether it's fun; if not after three areas in a row, pivot to the incremental version (gold buys permanent upgrades, stars, a results screen, a level select). Keep areas, spawn events, the Run scene and `Run_Carry` reusable for that. It must be super juicy.
+- **An area:** a small handcrafted map with several holes. Goblins pour out of the holes and walk (flow field) to goal holes; you fly around shooting them.
+- **Starting an area:** the player has a fresh **flare** ability each area. Nothing spawns until it's fired. No Ready phase, no Space / Next Wave.
+- **Spawn events:** each area's Wave Director holds spawn events: a spawn hole, a target hole, a count, a rate and a trigger (flare fired, after N seconds, after N goblins killed, when N or fewer remain, or after another event finishes). The area is clear when every event has finished and no goblins are left.
+- **Leaks:** a goblin reaching its goal hole is a leak and spends one point of a run-wide health pool; zero fails the run (Game Over with Restart). After a clear, half of what was lost comes back.
+- **Results screen:** a clear or fail shows one screen with a random title and a message. A pass has Next Area and Restart; a fail only Restart. Next Area fades to black, runs the pick-3 shop, reloads the Run scene and enters the next area.
+- **Pick-3 shop (at the fade):** one pick from three offers, drawn from one pool of weapons and abilities; offers exclude what was taken last time. Picks are kept for the run; weapons swap with Q.
+- **At the map limits:** crossing the warning line shows a warning; crossing the respawn line takes control, fades out and flies the plane back in at the area's spawn point (later replaced by the plane being shot down).
+- **Out of scope for now:** gold upgrades, the upgrades and loadout screens, stars and the results screen, the level select, bosses, plane health and eject.
 - **The horde is mostly passive:** it just walks. Over time, recognisable special groups appear:
-  - **Armed squads** that shoot back at the plane.
+  - **Armed squads** that shoot back at the plane (with plane health and eject, a second way to lose, later and out of scope for now).
   - **Shield tortoises:** goblins round the edge carry overhead shields like a medieval ram's roof, with 20-30 goblins huddled underneath, heading for a goal. The roof blocks fire from above.
-- **A wave ends when all its goblins are gone** (killed or into their goal); there's no timer, and escapes cost nothing: kills pay gold, which buys upgrades. **When the plane's health runs out it goes down:** the pilot can eject to save the run, and a failed eject ends it.
 - Gold per kill and the multiplier feed (Hit, Multi Kill, Blast, Kill, dark-humour group-kill names) stay.
 - Scale target: thousands of goblins now (~1,500 tested), 20k is the long-term stretch (needs the data-only horde, see Decisions).
 

@@ -16,8 +16,10 @@ MonoBehaviour:
     audioClips:
     - {fileID: 8300000, guid: 154fc2e2dc600d0489c0dfad94469154, type: 3}
     priority: 1
-    volume: 0.5
+    volume: 0.8
     pitch: 1
     loopSound: 0
+    additive: 1
+    spatialBlend: 1
     pitchRange: 0
     volumeRange: 0

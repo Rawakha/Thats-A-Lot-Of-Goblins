@@ -14,6 +14,34 @@ using UnityEngine.InputSystem;
 //
 // GC: none per frame. Lists are sized once; picking holes shuffles a list it keeps. One UpdateManager subscription
 // (OnUpdate), plus a Killed subscription on Horde_System and a Reached subscription on each hole.
+// One line of a debug wave: goblins out of one hole, heading for another
+[Serializable]
+public struct Wave_DebugSpawn
+{
+    [Tooltip("The hole they come out of.")]
+    public Wave_Hole spawn;
+
+    [Tooltip("The hole they walk to.")]
+    public Wave_Hole target;
+
+    [Tooltip("How many come out. 0 keeps them coming until Stop Debug Wave.")]
+    [Min(0)] public int count;
+}
+
+// A debug wave's settings, grouped so the whole lot hides with Debug Waves off
+[Serializable]
+public class Wave_DebugWave
+{
+    [Tooltip("Each line is a hole to come out of, a hole to walk to and how many (0: endless).")]
+    public Wave_DebugSpawn[] spawns;
+
+    [Tooltip("Seconds between goblins from each hole. 0 uses the settings' Spawn Interval.")]
+    [Min(0f)] public float interval;
+
+    [Tooltip("Start the debug wave as soon as play starts (otherwise press Next Wave / Space).")]
+    public bool onPlay;
+}
+
 public class Wave_Director : MonoBehaviour
 {
     private enum Phase
@@ -23,7 +51,8 @@ public class Wave_Director : MonoBehaviour
         Ready,
         Spawning,
         Running,
-        Finished
+        Finished,
+        Stopped
     }
 
     private struct Source
@@ -32,9 +61,12 @@ public class Wave_Director : MonoBehaviour
         public Wave_Hole Target;
         public int Left;
         public float Next;
+        public float Interval;
+        public bool Endless;    // debug waves: never runs out
     }
 
-    [SerializeField] private Wave_Settings settings;
+    // From the Area_Root on this object
+    private Wave_Settings settings;
 
     [Tooltip("The holes waves use. Empty: every Wave_Hole in the scene.")]
     [SerializeField] private List<Wave_Hole> holes = new List<Wave_Hole>();
@@ -45,6 +77,14 @@ public class Wave_Director : MonoBehaviour
     [Tooltip("Starts the next wave when the settings' Wait For Input is on: Game / Next Wave (Space, or the gamepad's " +
              "south button) in the InputActions asset.")]
     [SerializeField] private InputActionReference nextWaveAction;
+
+    [Header("Debug Wave")]
+    [Tooltip("For recording clips: send your own Debug Spawns instead of the normal waves. Next Wave (Space) then starts " +
+             "and stops the debug wave, and the normal waves don't start on play.")]
+    [SerializeField] private bool debugWaves;
+
+    [ShowIf(nameof(debugWaves), true)]
+    [SerializeField] private Wave_DebugWave debugWave = new Wave_DebugWave();
 
     [Header("Stats")]
     [SerializeField, ReadOnly] private int wave;
@@ -70,23 +110,37 @@ public class Wave_Director : MonoBehaviour
     private float nextCheck;
     private bool subscribed;
     private bool started;
+    private bool debugRunning;
 
     public int Wave => wave;
     public int Alive => alive;
     public int ToSpawn => toSpawn;
+    public Wave_Settings Settings => settings;
+    public bool DebugWaves => debugWaves;
+    public InputActionReference NextWaveAction => nextWaveAction;
+
+    // The Next Wave button does nothing while the player has no control of the plane
+    public bool InputLocked { get; set; }
 
     // Ready for the player to start this wave (the number), with Next Wave
     public event Action<int> WaitingForInput;
     public event Action<int> WaveStarted;
     public event Action<int> WaveCleared;
+    public event Action AreaCleared;
     public event Action<Horde_Goblin> GoblinKilled;
     public event Action<Wave_Hole, Horde_Goblin> GoblinReachedHole;
+
+    private void Awake()
+    {
+        Area_Settings area = TryGetComponent(out Area_Root root) ? root.Settings : null;
+        settings = area != null ? area.waves : null;
+    }
 
     private void Start()
     {
         if (settings == null || settings.goblinType == null)
         {
-            Debug.LogError($"{name}: Wave_Director needs Wave_Settings with a Goblin Type.", this);
+            Debug.LogError($"{name}: Wave_Director needs an Area_Root on this object, with Area Settings whose Wave Settings have a Goblin Type.", this);
             enabled = false;
             return;
         }
@@ -121,8 +175,15 @@ public class Wave_Director : MonoBehaviour
         started = true;
         Subscribe();
 
-        if (startOnPlay)
+        if (debugWaves)
+        {
+            if (debugWave.onPlay)
+                StartDebugWave();
+        }
+        else if (startOnPlay)
+        {
             StartWaves();
+        }
     }
 
     private void OnEnable() => Subscribe();
@@ -183,12 +244,104 @@ public class Wave_Director : MonoBehaviour
     [InspectorButton("Next Wave", true)]
     public void NextWave()
     {
-        if (state != Phase.Idle && state != Phase.Finished)
+        if (state != Phase.Idle && state != Phase.Finished && state != Phase.Stopped)
             BeginWave();
+    }
+
+    // Ends the waves for good (the run failed): nothing more spawns and no wave clears. Goblins already out carry on.
+    [InspectorButton("Stop Waves", true)]
+    public void StopWaves()
+    {
+        sources.Clear();
+        toSpawn = 0;
+        debugRunning = false;
+        SetPhase(Phase.Stopped);
+    }
+
+    // Sends the Debug Spawns instead of the normal waves (the goblins already out carry on). When a debug wave with
+    // no endless lines is cleared, nothing more comes until a button is pressed.
+    [InspectorButton("Start Debug Wave", true, ShowIf = nameof(debugWaves))]
+    public void StartDebugWave()
+    {
+        // Stopped means the run failed: the debug wave's Space toggle must not restart spawning
+        if (state == Phase.Stopped)
+            return;
+
+        if (!started || debugWave.spawns == null || debugWave.spawns.Length == 0)
+        {
+            Debug.LogWarning($"{name}: no Debug Spawns to send.", this);
+            return;
+        }
+
+        sources.Clear();
+        toSpawn = 0;
+        float now = Time.time;
+        float interval = debugWave.interval > 0f ? debugWave.interval : settings.spawnInterval;
+
+        for (int i = 0; i < debugWave.spawns.Length; i++)
+        {
+            Wave_DebugSpawn line = debugWave.spawns[i];
+
+            if (!Usable(line.spawn) || !Usable(line.target) || line.spawn == line.target)
+            {
+                Debug.LogWarning($"{name}: Debug Spawn {i} needs two different, enabled holes (each with a Flow_Goal); skipped.", this);
+                continue;
+            }
+
+            bool endless = line.count <= 0;
+
+            sources.Add(new Source
+            {
+                Hole = line.spawn,
+                Target = line.target,
+                Left = endless ? 1 : line.count,
+                Next = now + i * interval / debugWave.spawns.Length,
+                Interval = interval,
+                Endless = endless
+            });
+
+            if (!endless)
+                toSpawn += line.count;
+        }
+
+        if (sources.Count == 0)
+        {
+            SetPhase(Phase.Idle);
+            return;
+        }
+
+        debugRunning = true;
+        killedThisWave = 0;
+        reachedThisWave = 0;
+        alive = CountWaveGoblins();
+        nextCheck = now + 1f;
+        SetPhase(Phase.Spawning);
+    }
+
+    // Stops a debug wave's spawning (endless lines too); goblins already out carry on
+    [InspectorButton("Stop Debug Wave", true, ShowIf = nameof(debugWaves))]
+    public void StopDebugWave()
+    {
+        if (!debugRunning)
+            return;
+
+        sources.Clear();
+        toSpawn = 0;
+        debugRunning = false;
+        SetPhase(Phase.Idle);
     }
 
     private void Tick()
     {
+        // Debug waves: Next Wave (Space) starts the debug wave, and stops it while it's running
+        if (debugWaves && !InputLocked && nextWaveAction != null && nextWaveAction.action.WasPressedThisFrame())
+        {
+            if (debugRunning)
+                StopDebugWave();
+            else
+                StartDebugWave();
+        }
+
         switch (state)
         {
             case Phase.Waiting:
@@ -210,7 +363,7 @@ public class Wave_Director : MonoBehaviour
                 break;
 
             case Phase.Ready:
-                if (nextWaveAction != null && nextWaveAction.action.WasPressedThisFrame())
+                if (!debugWaves && !InputLocked && nextWaveAction != null && nextWaveAction.action.WasPressedThisFrame())
                     BeginWave();
 
                 break;
@@ -269,6 +422,7 @@ public class Wave_Director : MonoBehaviour
         }
 
         sources.Clear();
+        debugRunning = false;
         float now = Time.time;
 
         for (int i = 0; i < holesThisWave; i++)
@@ -284,7 +438,8 @@ public class Wave_Director : MonoBehaviour
                 Hole = hole,
                 Target = target,
                 Left = share,
-                Next = now + i * settings.spawnInterval / holesThisWave     // staggered so holes don't fire in step
+                Next = now + i * settings.spawnInterval / holesThisWave,    // staggered so holes don't fire in step
+                Interval = settings.spawnInterval
             });
         }
     }
@@ -306,7 +461,10 @@ public class Wave_Director : MonoBehaviour
             // A removed source/target cannot finish its pending spawns; cancel them so the wave can still clear.
             if (!Usable(source.Hole) || !Usable(source.Target))
             {
-                toSpawn -= source.Left;
+                if (!source.Endless)
+                    toSpawn -= source.Left;
+
+                source.Endless = false;
                 source.Left = 0;
                 sources[i] = source;
                 Debug.LogWarning($"{name}: a wave hole became unavailable; its pending spawns were cancelled.", this);
@@ -319,20 +477,35 @@ public class Wave_Director : MonoBehaviour
 
             while (source.Left > 0 && now >= source.Next)
             {
-                Launch(horde, source.Hole, source.Target);
-                source.Left--;
-                source.Next += settings.spawnInterval;
+                Launch(horde, source.Hole, source.Target, !source.Endless);
+
+                if (!source.Endless)
+                    source.Left--;
+
+                source.Next += source.Interval;
             }
 
             sources[i] = source;
         }
 
-        if (toSpawn <= 0)
+        if (toSpawn <= 0 && !AnyEndless())
             SetPhase(Phase.Running);
     }
 
+    private bool AnyEndless()
+    {
+        for (int i = 0; i < sources.Count; i++)
+        {
+            if (sources[i].Endless && sources[i].Left > 0)
+                return true;
+        }
+
+        return false;
+    }
+
     // Hops out of the hole's bottom to a spot round the rim (all round, leaning toward the target), sometimes flipping
-    private void Launch(Horde_System horde, Wave_Hole hole, Wave_Hole target)
+    // Counted: one of the wave's goblins still to come (an endless debug line's aren't)
+    private void Launch(Horde_System horde, Wave_Hole hole, Wave_Hole target, bool counted = true)
     {
         Vector3 from = hole.SpawnPoint();
         Vector3 toTarget = target.Centre - hole.Centre;
@@ -350,7 +523,8 @@ public class Wave_Director : MonoBehaviour
         Horde_Goblin goblin = horde.SpawnEmerging(settings.goblinType, from, landing, Quaternion.LookRotation(outward),
             target.Field, Mathf.Max(0.05f, Random(settings.hopDuration)), Random(settings.hopHeight), flip, settings.hopEase);
 
-        toSpawn--;
+        if (counted)
+            toSpawn--;
 
         if (goblin == null)
             return;
@@ -421,7 +595,7 @@ public class Wave_Director : MonoBehaviour
     // wave can't hang if some were removed another way (Despawn All).
     private void CheckCleared()
     {
-        if (toSpawn > 0)
+        if (toSpawn > 0 || AnyEndless())
             return;
 
         // Verify zero before clearing too, so event counts can never clear a wave with survivors.
@@ -434,10 +608,21 @@ public class Wave_Director : MonoBehaviour
         if (alive > 0)
             return;
 
+        // A debug wave just stops when it's cleared
+        if (debugRunning)
+        {
+            debugRunning = false;
+            SetPhase(Phase.Idle);
+            return;
+        }
+
         WaveCleared?.Invoke(wave);
 
         if (settings.IsLastWave(wave))
+        {
             SetPhase(Phase.Finished);
+            AreaCleared?.Invoke();
+        }
         else
             Wait(settings.timeBetweenWaves);
     }
@@ -478,6 +663,7 @@ public class Wave_Director : MonoBehaviour
             case Phase.Ready: phase = "Ready: press Next Wave"; break;
             case Phase.Spawning: phase = "Spawning"; break;
             case Phase.Running: phase = "Running"; break;
+            case Phase.Stopped: phase = "Stopped"; break;
             default: phase = "Finished"; break;
         }
     }

@@ -30,4 +30,8 @@ public class UI_ContextMessage : MonoBehaviour
     internal Color Colour;
     internal Core_SpringFloatState Scale;
     internal Core_SpringFloatState Angle;
+    internal bool IsScream;
+    internal Horde_Goblin Screamer;
+    internal int ScreamHandle;
+    internal float NextPunch;
 }

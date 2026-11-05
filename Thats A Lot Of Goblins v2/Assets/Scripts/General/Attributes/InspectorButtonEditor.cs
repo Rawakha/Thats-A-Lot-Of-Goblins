@@ -53,6 +53,16 @@ public class InspectorButtonEditor : Editor
                 continue;
             }
 
+            // Hidden while its ShowIf bool is false
+            if (!string.IsNullOrEmpty(attribute.ShowIf))
+            {
+                SerializedProperty condition = serializedObject.FindProperty(attribute.ShowIf);
+
+                if (condition != null && condition.propertyType == SerializedPropertyType.Boolean
+                    && !condition.hasMultipleDifferentValues && !condition.boolValue)
+                    continue;
+            }
+
             if (!addedSpacing)
             {
                 EditorGUILayout.Space();
@@ -91,6 +101,13 @@ public class InspectorButtonEditor : Editor
             }
         }
     }
+}
+
+// The same buttons on ScriptableObject assets (the editor above only covers MonoBehaviours)
+[CustomEditor(typeof(ScriptableObject), true)]
+[CanEditMultipleObjects]
+public class InspectorButtonAssetEditor : InspectorButtonEditor
+{
 }
 
 #endif

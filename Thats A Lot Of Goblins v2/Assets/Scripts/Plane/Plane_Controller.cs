@@ -19,6 +19,7 @@ public class Plane_Controller : MonoBehaviour
     private float travelHeading;
 
     public event Action Ticked;
+    public event Action Teleported;
 
     public Plane_Settings Settings => settings;
 
@@ -71,6 +72,32 @@ public class Plane_Controller : MonoBehaviour
     {
         if (UpdateManager.Instance != null)
             UpdateManager.Instance.OnUpdate -= Tick;
+    }
+
+    // Stops the plane where it is, for good until the scene reloads (the results screen coming up). Weapons stop too,
+    // since they tick from this.
+    public void Stop()
+    {
+        TurnRate = 0f;
+        VerticalSpeed = 0f;
+        Velocity = Vector3.zero;
+        enabled = false;
+    }
+
+    // Jumps to a spot in level flight at cruise height and full speed. Trails and the like clear on Teleported.
+    public void Teleport(Vector3 point, float heading)
+    {
+        Altitude = settings.cruiseHeight;
+        position = new Vector3(point.x, Altitude, point.z);
+        Heading = travelHeading = heading;
+        TurnRate = 0f;
+        VerticalSpeed = 0f;
+        Speed = settings.straightSpeed;
+
+        Vector3 forward = Quaternion.Euler(0f, heading, 0f) * Vector3.forward;
+        Velocity = forward * Speed;
+        transform.SetPositionAndRotation(position, Quaternion.Euler(0f, heading, 0f));
+        Teleported?.Invoke();
     }
 
     private void Tick()

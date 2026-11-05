@@ -41,6 +41,23 @@ public static class Debug_Gizmos
         }
     }
 
+    // A text label in the Scene view at a world point, in a colour (editor only; does nothing in builds). Labels name
+    // what a gizmo shows ("Assist Range 70 m"), so tuning is readable without a legend.
+    public static void Label(Vector3 position, string text, Color colour)
+    {
+#if UNITY_EDITOR
+        if (labelStyle == null)
+            labelStyle = new GUIStyle(UnityEditor.EditorStyles.boldLabel) { fontSize = 11 };
+
+        labelStyle.normal.textColor = colour;
+        UnityEditor.Handles.Label(position, text, labelStyle);
+#endif
+    }
+
+#if UNITY_EDITOR
+    private static GUIStyle labelStyle;
+#endif
+
     // Flat unit direction for a heading in degrees (0 = +z, 90 = +x)
     public static Vector3 Direction(float heading)
     {

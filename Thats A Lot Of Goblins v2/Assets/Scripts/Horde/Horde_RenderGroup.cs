@@ -145,6 +145,56 @@ public sealed class Horde_RenderGroup : IDisposable
         animStates[index] = state;
     }
 
+    // Where a goblin's body and head are drawn right now, with the same sums as Horde_PartMatricesJob (gibs start here)
+    public void GetAnchors(int index, out float4x4 body, out float4x4 head)
+    {
+        handle.Complete();
+        float4x4 root = float4x4.TRS(rootPositions[index], rootRotations[index], new float3(rootScales[index]));
+
+        Horde_Pose bodyPose = bodyPoses[index];
+        float3 bodyStretch = bodyScales[index] * bodyPose.Scale;
+        float3 bodyAt = bodyPosition + math.mul(bodyRotation, bodyPose.Position);
+        quaternion bodyTurn = math.mul(bodyRotation, bodyPose.Rotation);
+        body = math.mul(root, float4x4.TRS(bodyAt, bodyTurn, bodyScale * bodyStretch));
+
+        float3 fromBody = math.mul(math.inverse(bodyRotation), headPosition - bodyPosition) * bodyStretch;
+        Horde_Pose headPose = headPoses[index];
+        quaternion carried = math.mul(bodyTurn, math.inverse(bodyRotation));
+        float3 headAt = bodyAt + math.mul(bodyTurn, fromBody) + math.mul(math.mul(carried, headRotation), headPose.Position);
+        quaternion headTurn = math.mul(math.mul(carried, headRotation), headPose.Rotation);
+        head = math.mul(root, float4x4.TRS(headAt, headTurn, headScale * headScales[index] * headPose.Scale));
+    }
+
+    // The goblin's tint (rgb) and hit flash (a)
+    public float4 ColourAt(int index)
+    {
+        handle.Complete();
+        return colours[index];
+    }
+
+    // Stops drawing a goblin's head and whatever rides on it (eyes), or all of it. Its next life rolls new scales.
+    public void HideHead(int index)
+    {
+        handle.Complete();
+        headScales[index] = float3.zero;
+    }
+
+    public void HideAll(int index)
+    {
+        handle.Complete();
+        headScales[index] = float3.zero;
+        bodyScales[index] = float3.zero;
+    }
+
+    // A corpse's time is up: it starts its shrink now, whatever delay it was given
+    public void StartShrink(int index, float time)
+    {
+        handle.Complete();
+        Horde_AnimState state = animStates[index];
+        state.DeathDelay = time - state.DeathTime;
+        animStates[index] = state;
+    }
+
     // Both pupils share this offset. Zero restores the material gaze plus automatic glances.
     public void SetEyeGaze(int index, Vector2 gaze)
     {
@@ -242,6 +292,7 @@ public sealed class Horde_RenderGroup : IDisposable
         handle.Complete();
         Horde_AnimState state = animStates[index];
         state.DeathTime = time;
+        state.LiveColour = colours[index].xyz;
         state.DeathDelay = delay;
         state.DeathLength = length;
 
@@ -508,6 +559,9 @@ public sealed class Horde_RenderGroup : IDisposable
             EmergeCurve = emergeCurve.IsCreated ? emergeCurve : deathCurve,
             States = animStates.AsArray(),
             Colours = colours.AsArray(),
+            CorpseBrightness = type.corpseBrightness,
+            CorpseGrey = type.corpseGrey,
+            CorpseDimTime = type.corpseDimTime,
             RootRotations = rootRotations,
             RootScales = rootScales,
             TipAngle = type.deathTipAngle,

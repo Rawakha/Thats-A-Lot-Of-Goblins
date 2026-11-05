@@ -23,6 +23,8 @@ public class Plane_Input : MonoBehaviour
     [SerializeField, FormerlySerializedAs("gunAngleAction")] private InputActionReference targetModeAction;
     [Tooltip("Plane / Cycle Ability: selects the next ability on the belt (E, gamepad left shoulder).")]
     [SerializeField] private InputActionReference cycleAbilityAction;
+    [Tooltip("Plane / Reload: reloads the weapon early (R, gamepad X / West).")]
+    [SerializeField] private InputActionReference reloadAction;
     [SerializeField] private Camera viewCamera;
 
     [Header("Tuning")]
@@ -36,6 +38,9 @@ public class Plane_Input : MonoBehaviour
 
     private Device activeDevice = Device.Pointer;
     private Vector2 lastPointer;
+    private bool locked;
+    private bool weaponsLocked;
+    private Vector3 lockedDirection;
 
     public Vector3 Direction { get; private set; }
 
@@ -54,6 +59,9 @@ public class Plane_Input : MonoBehaviour
     // Cycle Ability was pressed this tick
     public bool CycleAbilityPressed { get; private set; }
 
+    // Reload was pressed this tick
+    public bool ReloadPressed { get; private set; }
+
     private void Awake()
     {
         if (viewCamera == null)
@@ -69,6 +77,7 @@ public class Plane_Input : MonoBehaviour
         SetEnabled(abilityAction, true);
         SetEnabled(targetModeAction, true);
         SetEnabled(cycleAbilityAction, true);
+        SetEnabled(reloadAction, true);
     }
 
     private void OnDisable()
@@ -80,11 +89,36 @@ public class Plane_Input : MonoBehaviour
         SetEnabled(abilityAction, false);
         SetEnabled(targetModeAction, false);
         SetEnabled(cycleAbilityAction, false);
+        SetEnabled(reloadAction, false);
     }
+
+    // Takes every control from the player: flight, weapons, abilities, reload and target mode. The plane steers toward
+    // direction until Unlock.
+    public void Lock(Vector3 direction)
+    {
+        locked = true;
+        lockedDirection = direction;
+        Direction = direction.normalized;
+    }
+
+    public void Unlock() => locked = false;
+
+    // Weapons, abilities, reload and target mode off, while the plane still steers (a results screen is up)
+    public void SetWeaponsLocked(bool value) => weaponsLocked = value;
 
     // Call once per tick before reading Direction / Dive / buttons. With no steering input the plane keeps currentForward.
     public void Read(Vector3 planePosition, Vector3 currentForward)
     {
+        if (locked)
+        {
+            PointerPosition = ReadValue<Vector2>(aimAction);
+            Direction = Core_Math.FlatDirection(lockedDirection, currentForward);
+            Dive = 0f;
+            FireHeld = FirePressed = AbilityHeld = AbilityPressed = false;
+            TargetModePressed = CycleAbilityPressed = ReloadPressed = false;
+            return;
+        }
+
         Vector2 stick = ReadValue<Vector2>(steerAction);
         Vector2 pointer = ReadValue<Vector2>(aimAction);
         bool stickActive = stick.sqrMagnitude > stickDeadzone * stickDeadzone;
@@ -121,6 +155,13 @@ public class Plane_Input : MonoBehaviour
         AbilityPressed = WasPressed(abilityAction);
         TargetModePressed = WasPressed(targetModeAction);
         CycleAbilityPressed = WasPressed(cycleAbilityAction);
+        ReloadPressed = WasPressed(reloadAction);
+
+        if (weaponsLocked)
+        {
+            FireHeld = FirePressed = AbilityHeld = AbilityPressed = false;
+            TargetModePressed = CycleAbilityPressed = ReloadPressed = false;
+        }
     }
 
     // The camera never rotates, so stick up is always up the screen

@@ -94,12 +94,28 @@ public class Plane_Effects : MonoBehaviour
         }
 
         UpdateManager.Instance.OnLateUpdate += LateTick;
+        plane.Teleported += ClearEffects;
     }
 
     private void OnDisable()
     {
         if (UpdateManager.Instance != null)
             UpdateManager.Instance.OnLateUpdate -= LateTick;
+
+        plane.Teleported -= ClearEffects;
+    }
+
+    // After a teleport, so trails and streaks don't stretch across the map
+    private void ClearEffects()
+    {
+        if (speedLines != null)
+            speedLines.Clear();
+
+        for (int i = 0; i < trails.Length; i++)
+        {
+            if (trails[i].Trail != null)
+                trails[i].Trail.Clear();
+        }
     }
 
     private void LateTick()

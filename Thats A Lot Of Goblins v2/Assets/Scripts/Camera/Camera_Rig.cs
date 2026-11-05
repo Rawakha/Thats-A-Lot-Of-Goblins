@@ -33,6 +33,13 @@ public class Camera_Rig : MonoBehaviour
     private Core_SpringFloatState yaw;
     private float trauma;
 
+    // Hold / CatchUp: the camera stays put while the plane flies off or in, then blends back to following
+    private bool holding;
+    private Vector3 holdFollow;
+    private Vector3 holdLead;
+    private float catchDuration;
+    private float catchTime;
+
     // The rig shakes and kicks go to: the most recently enabled one
     public static Camera_Rig Active { get; private set; }
 
@@ -106,6 +113,43 @@ public class Camera_Rig : MonoBehaviour
         Apply(Vector3.zero, Vector3.zero);
     }
 
+    // Stops following where the camera is now, coasting this many metres on so it eases to a stop
+    public void Hold(float coast)
+    {
+        holding = true;
+        catchDuration = 0f;
+        holdFollow = follow.value + Core_Math.Flatten(target.Velocity).normalized * coast;
+        holdLead = lead.value;
+    }
+
+    // Jumps to frame this point, as if the plane were there flying in its current direction, and stays until CatchUp
+    public void HoldAt(Vector3 point)
+    {
+        Snap();
+        holding = true;
+        catchDuration = 0f;
+        holdFollow = new Vector3(point.x, target.transform.position.y * settings.heightFollow, point.z);
+        holdLead = lead.value;
+        follow = new Core_SpringVector3State(holdFollow);
+        Apply(Vector3.zero, Vector3.zero);
+    }
+
+    // Goes back to following, blending over this many seconds so it looks like the camera catching the plane
+    public void CatchUp(float duration)
+    {
+        if (!holding)
+            return;
+
+        if (duration <= 0f)
+        {
+            holding = false;
+            return;
+        }
+
+        catchDuration = duration;
+        catchTime = 0f;
+    }
+
     private void LateTick()
     {
         float deltaTime = Time.deltaTime;
@@ -123,8 +167,28 @@ public class Camera_Rig : MonoBehaviour
         Core_Math.SpringRatio(ref roll, wantedRoll, stiffness, ratio, deltaTime);
         Core_Math.SpringRatio(ref yaw, HeadingYaw(), settings.headingStiffness, settings.headingDampingRatio, deltaTime);
 
-        Core_Math.SpringRatio(ref follow, FollowPoint(), settings.followStiffness, settings.followDampingRatio, deltaTime);
-        Core_Math.SpringRatio(ref lead, LeadOffset(), settings.leadStiffness, settings.leadDampingRatio, deltaTime);
+        Vector3 wantedFollow = FollowPoint();
+        Vector3 wantedLead = LeadOffset();
+
+        if (holding)
+        {
+            float caught = 0f;
+
+            if (catchDuration > 0f)
+            {
+                catchTime += deltaTime;
+                caught = Mathf.SmoothStep(0f, 1f, catchTime / catchDuration);
+
+                if (catchTime >= catchDuration)
+                    holding = false;
+            }
+
+            wantedFollow = Vector3.Lerp(holdFollow, wantedFollow, caught);
+            wantedLead = Vector3.Lerp(holdLead, wantedLead, caught);
+        }
+
+        Core_Math.SpringRatio(ref follow, wantedFollow, settings.followStiffness, settings.followDampingRatio, deltaTime);
+        Core_Math.SpringRatio(ref lead, wantedLead, settings.leadStiffness, settings.leadDampingRatio, deltaTime);
         Core_Math.SpringRatio(ref kick, Vector3.zero, settings.kickStiffness, settings.kickDampingRatio, deltaTime);
 
         trauma = Mathf.Max(0f, trauma - settings.traumaDecay * deltaTime);

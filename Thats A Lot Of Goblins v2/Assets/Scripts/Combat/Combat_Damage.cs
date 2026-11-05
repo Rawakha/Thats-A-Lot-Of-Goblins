@@ -48,6 +48,12 @@ public struct Combat_Explosion
     public float Damage;
     public float FlingOut;
     public float FlingUp;
+
+    // In the fling ring: the chance a goblin dies on the spot, at the kill radius and at the outer edge (between, it
+    // fades). The rest fly screaming; those the blast would have killed die when they hit the ground.
+    public float InstantDeathInner;
+    public float InstantDeathOuter;
+
     public int Source;
 }
 

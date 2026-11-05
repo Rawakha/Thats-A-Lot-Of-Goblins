@@ -57,6 +57,7 @@ public class UI_Shadowed : MonoBehaviour
     private float authoredAlpha;
     private float shadowAlpha;
     private bool dimmed;
+    private bool visible = true;
     private bool ready;
     private bool placed;
 
@@ -81,7 +82,7 @@ public class UI_Shadowed : MonoBehaviour
         Init();
 
         if (shadow != null && Application.isPlaying)
-            shadow.enabled = true;
+            shadow.enabled = visible;
 
         placed = false;
         Canvas.willRenderCanvases += Follow;
@@ -143,6 +144,18 @@ public class UI_Shadowed : MonoBehaviour
         }
 
         placed = false;
+    }
+
+    // Shows or hides the main and its shadow together, without deactivating the object (so a hidden one can't leave its
+    // shadow behind, and parents turning on and off don't bring it back)
+    public void SetVisible(bool value)
+    {
+        Init();
+        visible = value;
+        main.enabled = value;
+
+        if (shadow != null)
+            shadow.enabled = value;
     }
 
     public void SetText(string text)

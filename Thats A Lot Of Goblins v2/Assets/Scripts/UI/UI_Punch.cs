@@ -8,12 +8,14 @@ using UnityEngine;
 //     lands 0.05 s later, so elements punched together can land one after another instead of as one block.
 //   - KickScale / KickRotation / KickPosition: one kind of kick, for anything else.
 //   - SetTargetScale(1.05f): springs to that size (times the element's own scale) and stays there.
+//   - SetIdle(degrees, speed, breathe, breatheSpeed): a rock and a scale pulse that fade in and carry on under the kicks
+//     until SetIdle(0, ...) fades them out (a hovered button).
 // It moves the element's own RectTransform from its rest pose (scale and rotation taken on first use, position when
 // a push starts, so elements in a layout group can still use it). On a UI_Shadowed main the shadow follows by itself.
 //
 // Setup: add to the element (the ammo text, an ability row) and tune. Low damper = more wobble.
 //
-// GC: none. One UpdateManager subscription (OnLateUpdate), only while it's moving: it unsubscribes once settled.
+// GC: none. One UpdateManager subscription (OnLateUpdate), only while it's moving or idling: it unsubscribes once settled.
 [DisallowMultipleComponent]
 public class UI_Punch : MonoBehaviour
 {
@@ -50,6 +52,13 @@ public class UI_Punch : MonoBehaviour
     [Tooltip("How the position springs back.")]
     [SerializeField] private Core_SpringSettings positionSpring = new Core_SpringSettings(400f, 18f);
 
+    [Header("Time")]
+    [Tooltip("Keep moving when the game is paused or in hitstop. On for menus and buttons.")]
+    [SerializeField] private bool unscaledTime;
+
+    [Tooltip("Seconds SetIdle's rock and pulse take to fade in or out.")]
+    [Min(0.01f)] [SerializeField] private float idleFade = 0.2f;
+
     private const float RestEpsilon = 0.0005f;
 
     private RectTransform rect;
@@ -70,6 +79,15 @@ public class UI_Punch : MonoBehaviour
     private float pendingStrength;
     private float pendingTime;
 
+    // The idle rock and pulse
+    private float idleDegrees;
+    private float idleSpeed;
+    private float idleBreathe;
+    private float idleBreatheSpeed;
+    private float idleBlend;
+    private float idleBlendTarget;
+    private float idleTime;
+
     public float TargetScale => targetScale;
 
     private void Awake()
@@ -89,6 +107,8 @@ public class UI_Punch : MonoBehaviour
         scale = new Core_SpringFloatState(targetScale);
         angle = default;
         offset = default;
+        idleBlend = 0f;
+        idleBlendTarget = 0f;
         Apply();
     }
 
@@ -181,6 +201,28 @@ public class UI_Punch : MonoBehaviour
         StartTicking();
     }
 
+    // A rock of this many degrees either way (speed in radians per second) and a scale pulse (0.03 is 3%). Fades in, and
+    // carries on until called with 0 degrees and 0 breathe, which fades it out.
+    public void SetIdle(float degrees, float speed, float breathe, float breatheSpeed)
+    {
+        Init();
+
+        if (degrees > 0f || breathe > 0f)
+        {
+            idleDegrees = degrees;
+            idleSpeed = speed;
+            idleBreathe = breathe;
+            idleBreatheSpeed = breatheSpeed;
+            idleBlendTarget = 1f;
+        }
+        else
+        {
+            idleBlendTarget = 0f;
+        }
+
+        StartTicking();
+    }
+
     private void StartTicking()
     {
         if (ticking || !isActiveAndEnabled || UpdateManager.Instance == null)
@@ -203,10 +245,13 @@ public class UI_Punch : MonoBehaviour
 
     private void Tick()
     {
-        float deltaTime = Time.deltaTime;
+        float deltaTime = unscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
 
         if (deltaTime <= 0f)
             return;
+
+        idleBlend = Mathf.MoveTowards(idleBlend, idleBlendTarget, deltaTime / idleFade);
+        idleTime += deltaTime;
 
         if (pendingStrength > 0f)
         {
@@ -242,7 +287,7 @@ public class UI_Punch : MonoBehaviour
         }
 
         // Settled: land exactly on rest and stop ticking until the next kick
-        if (pendingStrength <= 0f && Mathf.Abs(scale.value - targetScale) < RestEpsilon && Mathf.Abs(scale.velocity) < RestEpsilon * 10f
+        if (pendingStrength <= 0f && idleBlend <= 0f && idleBlendTarget <= 0f && Mathf.Abs(scale.value - targetScale) < RestEpsilon && Mathf.Abs(scale.velocity) < RestEpsilon * 10f
             && Mathf.Abs(angle.value) < RestEpsilon && Mathf.Abs(angle.velocity) < RestEpsilon * 10f
             && offset.value.sqrMagnitude < RestEpsilon && offset.velocity.sqrMagnitude < RestEpsilon)
         {
@@ -257,8 +302,11 @@ public class UI_Punch : MonoBehaviour
 
     private void Apply()
     {
-        transform.localScale = restScale * scale.value;
-        transform.localRotation = restRotation * Quaternion.Euler(0f, 0f, angle.value);
+        float rock = idleBlend * idleDegrees * Mathf.Sin(idleTime * idleSpeed);
+        float breathe = 1f + idleBlend * idleBreathe * Mathf.Sin(idleTime * idleBreatheSpeed);
+
+        transform.localScale = restScale * (scale.value * breathe);
+        transform.localRotation = restRotation * Quaternion.Euler(0f, 0f, angle.value + rock);
 
         // Position is only touched while pushed, then put back once, so it never fights a layout group
         if (rect != null && displaced)

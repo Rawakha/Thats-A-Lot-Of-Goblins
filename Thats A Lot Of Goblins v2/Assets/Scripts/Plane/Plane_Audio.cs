@@ -32,7 +32,12 @@ public class Plane_Audio : MonoBehaviour
     [SerializeField] private Transform listener;
     [SerializeField] private Camera viewCamera;
 
+    [Header("Fade Out")]
+    [Tooltip("Seconds the loops take to fade away when FadeOut is called (the results screen coming up).")]
+    [Min(0.01f)] [SerializeField] private float fadeOutTime = 1f;
+
     private Plane_Controller plane;
+    private bool fadingOut;
 
     private Loop engineLow;
     private Loop engineHigh;
@@ -89,12 +94,28 @@ public class Plane_Audio : MonoBehaviour
         ReturnLoops();
     }
 
+    // The loops fade away and are handed back, and this stops
+    public void FadeOut() => fadingOut = true;
+
     private void LateTick()
     {
         float deltaTime = Time.deltaTime;
 
         if (deltaTime <= 0f)
             return;
+
+        if (fadingOut)
+        {
+            fade = Mathf.MoveTowards(fade, 0f, deltaTime / fadeOutTime);
+            ScaleLoop(ref engineLow);
+            ScaleLoop(ref engineHigh);
+            ScaleLoop(ref wind);
+
+            if (fade <= 0f)
+                enabled = false;
+
+            return;
+        }
 
         // The AudioManager may start after this, so loops are rented on the first tick it's ready
         if (!rented)
@@ -172,6 +193,12 @@ public class Plane_Audio : MonoBehaviour
 
         loop.Source.volume = loop.BaseVolume * loop.Volume * fade;
         loop.Source.pitch = loop.BasePitch * loop.Pitch;
+    }
+
+    private void ScaleLoop(ref Loop loop)
+    {
+        if (loop.Source != null)
+            loop.Source.volume = loop.BaseVolume * loop.Volume * fade;
     }
 
     private void FollowListener()

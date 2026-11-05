@@ -51,6 +51,13 @@ public class Combat_ProjectileType : MonoBehaviour
     [Tooltip("Upward throw at the edge of the kill radius, m/s. Weaker further out.")]
     [Min(0f)] public float flingUp = 11f;
 
+    [Tooltip("Chance (0-1) a goblin in the fling ring dies on the spot, right at the kill radius. The rest fly " +
+             "screaming, eyes open; any the blast's damage would kill die when they hit the ground.")]
+    [Range(0f, 1f)] public float instantDeathInner = 0.8f;
+
+    [Tooltip("The same chance at the ring's outer edge. It fades from Inner to this across the ring.")]
+    [Range(0f, 1f)] public float instantDeathOuter = 0.1f;
+
     [Tooltip("Camera trauma for the blast, 0-1.")]
     [Range(0f, 1f)] public float explosionTrauma = 0.45f;
 

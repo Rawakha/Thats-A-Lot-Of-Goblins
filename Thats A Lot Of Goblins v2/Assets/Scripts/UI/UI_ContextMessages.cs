@@ -9,7 +9,7 @@ using UnityEngine;
 // and settle, wobble, rise and drift, hold, then shrink and fade). More kills make a bigger message.
 //
 // Anything can play one: UI_ContextMessages.TryPlay(UI_MessageContext.Explosion, worldPoint, kills). Horde_System
-// does for blasts.
+// does for blasts and also starts/stops short labels that follow the mouths of goblins playing tracked screams.
 //
 // Setup: put this on the HUD (under the canvas), assign the canvas, the message prefab (UI_ContextMessage) and the
 // message sets (one per context). Messages are made under Container (empty: the canvas).
@@ -66,6 +66,16 @@ public class UI_ContextMessages : MonoBehaviour
 
     [Tooltip("Seconds it takes to shrink and fade away.")]
     [SerializeField, Min(0.01f)] private float exitDuration = 0.25f;
+
+    [Header("Screams")]
+    [Tooltip("Maximum simultaneous scream labels. Zero disables them.")]
+    [SerializeField, Min(0)] private int maxScreams = 3;
+    [SerializeField] private string screamText = "AAAAAA!";
+    [SerializeField] private Color screamColour = Color.white;
+    [SerializeField, Min(0f)] private float screamSize = 0.55f;
+    [SerializeField, Min(0f)] private float screamHeight = 10f;
+    [SerializeField, Min(0.05f)] private float screamPunchInterval = 0.25f;
+    [SerializeField, Min(0f)] private float screamPunch = 5f;
 
     [Header("Sound")]
     [Tooltip("Played with a dark line. Optional; make it 2D.")]
@@ -215,7 +225,45 @@ public class UI_ContextMessages : MonoBehaviour
         return lines[index];
     }
 
-    private void Show(Vector3 point, string text, Color colour, float size, float holdTime, float punch, float now)
+    public void StartScream(Horde_Goblin goblin)
+    {
+        if (!isActiveAndEnabled || viewCamera == null || free.Count <= 1 ||
+            maxScreams <= 0 || string.IsNullOrEmpty(screamText))
+            return;
+
+        int count = 0;
+        for (int i = 0; i < live.Count; i++)
+        {
+            if (live[i].Screamer == goblin)
+                return;
+            if (live[i].IsScream)
+                count++;
+        }
+
+        Vector3 point = goblin.transform.TransformPoint(goblin.Type.mouthPosition);
+        Vector3 viewport = viewCamera.WorldToViewportPoint(point);
+        if (count >= maxScreams || viewport.z <= 0f ||
+            viewport.x < 0f || viewport.x > 1f || viewport.y < 0f || viewport.y > 1f)
+            return;
+
+        Show(point, screamText, screamColour, screamSize, float.PositiveInfinity, 1f, Time.unscaledTime, goblin);
+    }
+
+    public void StopScream(Horde_Goblin goblin)
+    {
+        for (int i = 0; i < live.Count; i++)
+            if (live[i].Screamer == goblin)
+                EndScream(live[i], Time.unscaledTime);
+    }
+
+    private static void EndScream(UI_ContextMessage message, float now)
+    {
+        message.Screamer = null;
+        message.Hold = now - message.Start;
+    }
+
+    private void Show(Vector3 point, string text, Color colour, float size, float holdTime, float punch, float now,
+        Horde_Goblin screamer = null)
     {
         UI_ContextMessage message = Take();
 
@@ -224,13 +272,17 @@ public class UI_ContextMessages : MonoBehaviour
         message.Start = now;
         message.Size = size;
         message.Hold = holdTime;
-        message.Drift = new Vector2(Random.Range(-drift, drift), rise);
+        message.IsScream = screamer != null;
+        message.Screamer = screamer;
+        message.ScreamHandle = screamer != null ? screamer.ScreamHandle : 0;
+        message.NextPunch = now + (screamer != null ? Random.Range(0.8f, 1.2f) * screamPunchInterval : 0f);
+        message.Drift = message.IsScream ? Vector2.zero : new Vector2(Random.Range(-drift, drift), rise);
         message.Colour = colour;
         message.Text.SetColor(colour);
 
         // Starts at nothing with a kick upward, so it shoots past its size and springs back
         message.Scale = new Core_SpringFloatState(0f) { velocity = popKick * punch * size };
-        message.Angle = new Core_SpringFloatState(0f) { velocity = rotateKick * punch * spinSign };
+        message.Angle = new Core_SpringFloatState(0f) { velocity = message.IsScream ? 0f : rotateKick * punch * spinSign };
         spinSign = -spinSign;
 
         message.Rect.SetAsLastSibling();
@@ -269,6 +321,7 @@ public class UI_ContextMessages : MonoBehaviour
 
             if (!Animate(message, now, deltaTime))
             {
+                message.Screamer = null;
                 message.gameObject.SetActive(false);
                 free.Push(message);
                 live.RemoveAt(i);
@@ -279,6 +332,28 @@ public class UI_ContextMessages : MonoBehaviour
     // One frame of a message's life. False once it's gone.
     private bool Animate(UI_ContextMessage message, float now, float deltaTime)
     {
+        if (viewCamera == null)
+            return false;
+
+        if (message.IsScream && float.IsPositiveInfinity(message.Hold))
+        {
+            Horde_Goblin goblin = message.Screamer;
+            if (goblin == null || !goblin.IsActive || goblin.ScreamHandle != message.ScreamHandle ||
+                AudioManager.Instance == null || !AudioManager.Instance.IsTrackedPlaying(message.ScreamHandle))
+            {
+                EndScream(message, now);
+            }
+            else
+            {
+                message.Point = goblin.transform.TransformPoint(goblin.Type.mouthPosition);
+                if (now >= message.NextPunch)
+                {
+                    message.Scale.velocity = screamPunch * message.Size;
+                    message.NextPunch = now + Mathf.Max(0.05f, screamPunchInterval);
+                }
+            }
+        }
+
         float age = now - message.Start;
         float life = message.Hold + exitDuration;
 
@@ -316,7 +391,7 @@ public class UI_ContextMessages : MonoBehaviour
         float eased = 1f - (1f - t) * (1f - t);
 
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(container, screen, canvasCamera, out Vector2 local))
-            message.Rect.localPosition = local + new Vector2(0f, spawnHeight) + message.Drift * eased;
+            message.Rect.localPosition = local + new Vector2(0f, message.IsScream ? screamHeight : spawnHeight) + message.Drift * eased;
 
         return true;
     }

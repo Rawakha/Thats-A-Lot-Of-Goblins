@@ -94,7 +94,9 @@ public class Equip_Loadout : MonoBehaviour
         if (slot == Equip_Slot.Ability && belt != null)
             return belt.SelectedAbility;
 
-        return slots != null ? slots[(int)slot] : null;
+        // Bounds-checked: a serialized slot value from an older enum layout would otherwise throw
+        int index = (int)slot;
+        return slots != null && index >= 0 && index < slots.Length ? slots[index] : null;
     }
 
     public bool IsEquipped(Equip_Item prefab)
@@ -278,6 +280,10 @@ public class Equip_Loadout : MonoBehaviour
 
         if (belt != null)
             belt.Tick(aimData, deltaTime, input.AbilityHeld, input.AbilityPressed, input.CycleAbilityPressed);
+
+        // Reload (R): the weapon reloads early, if it has a magazine that isn't full
+        if (input.ReloadPressed && slots[(int)Equip_Slot.Weapon] is Weapon_IAmmo magazine)
+            magazine.TryReload();
     }
 
     private void ReadSlotInput(Equip_Slot slot, out bool held, out bool pressed)

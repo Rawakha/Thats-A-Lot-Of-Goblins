@@ -64,6 +64,7 @@ public struct Horde_AnimState
 
     // Death: the time it was killed, or -1 alive. The job tips it over and shrinks it along the type's death ease.
     public float DeathTime;
+    public float3 LiveColour;                   // its tint when killed: corpses dim from this
     public float DeathDelay;                    // seconds lying there before the shrink
     public float DeathLength;                   // seconds of shrinking (short for a goblin blown apart)
     public float3 TipAxis;                      // world axis it falls around: away from the killing hit
@@ -173,7 +174,10 @@ public struct Horde_AnimateJob : IJobParallelFor
     [Unity.Collections.ReadOnly] public NativeArray<float> EmergeCurve;    // progress along the hop out of a hole, evenly sampled
 
     public NativeArray<Horde_AnimState> States;
-    public NativeArray<float4> Colours;                                     // .w is written: the hit flash
+    public NativeArray<float4> Colours;                                     // written: .w the hit flash, .xyz a corpse dimming
+    public float CorpseBrightness;
+    public float CorpseGrey;
+    public float CorpseDimTime;
     [WriteOnly] public NativeArray<quaternion> RootRotations;
     [WriteOnly] public NativeArray<float> RootScales;
     [WriteOnly] public NativeArray<Horde_Pose> BodyPoses;
@@ -226,6 +230,14 @@ public struct Horde_AnimateJob : IJobParallelFor
                 if (s.Tip.velocity > 0f)
                     s.Tip.velocity = -s.Tip.velocity * TipBounce;
             }
+
+            // A corpse dims and greys, so a pile doesn't read as a living crowd from the plane
+            float dim = math.saturate((Time - s.DeathTime) / math.max(CorpseDimTime, 0.0001f));
+            float grey = math.dot(s.LiveColour, new float3(0.3f, 0.59f, 0.11f));
+            float3 dead = math.lerp(s.LiveColour, new float3(grey), CorpseGrey) * CorpseBrightness;
+            float4 tint = Colours[index];
+            tint.xyz = math.lerp(s.LiveColour, dead, dim);
+            Colours[index] = tint;
         }
 
         if (s.Physical)

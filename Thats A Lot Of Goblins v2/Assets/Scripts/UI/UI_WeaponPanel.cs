@@ -38,12 +38,18 @@ public class UI_WeaponPanel : MonoBehaviour
     [Tooltip("Shown as the ammo for a weapon without a magazine (or with a bottomless one).")]
     [SerializeField] private string noAmmoText = "-";
 
+    [Tooltip("Shown as the ammo while reloading.")]
+    [SerializeField] private string reloadingText = "--";
+
     [Header("Reload")]
     [Tooltip("Fills from empty to full over the reload. Its Min and Max should be 0 and 1.")]
     [SerializeField] private Slider reloadBar;
 
     [Tooltip("Hide the reload bar when not reloading. Off: it sits full.")]
     [SerializeField] private bool hideBarWhenLoaded = true;
+
+    [Tooltip("How hard the ammo counter punches when a reload starts (it switches to Reloading Text), as a share of the UI_Punch's own kick.")]
+    [Min(0f)] [SerializeField] private float reloadStartPunch = 2f;
 
     [Tooltip("How hard the ammo counter punches when a reload completes, as a share of the UI_Punch's own kick.")]
     [Min(0f)] [SerializeField] private float reloadPunch = 3f;
@@ -116,6 +122,10 @@ public class UI_WeaponPanel : MonoBehaviour
         if (ammo.Ammo < lastAmmo && ammoPunch != null)
             ammoPunch.Punch(shotPunch);
 
+        // A reload just started: the counter switches to Reloading Text with a punch
+        if (!wasReloading && reloading && ammoPunch != null)
+            ammoPunch.Punch(reloadStartPunch);
+
         // A reload just finished: the big punch
         if (wasReloading && !reloading)
         {
@@ -136,7 +146,9 @@ public class UI_WeaponPanel : MonoBehaviour
         if (ammoText == null)
             return;
 
-        if (ammo != null && ammo.MagazineSize > 0)
+        if (ammo != null && ammo.MagazineSize > 0 && ammo.Reloading)
+            ammoText.SetText(reloadingText);
+        else if (ammo != null && ammo.MagazineSize > 0)
             ammoText.SetText("{0}", ammo.Ammo);
         else
             ammoText.SetText(noAmmoText);

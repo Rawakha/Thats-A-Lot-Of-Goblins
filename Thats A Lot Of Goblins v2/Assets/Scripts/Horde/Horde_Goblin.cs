@@ -35,6 +35,13 @@ public class Horde_Goblin : Core_RegistrableBehaviour, Combat_IDamageable
     internal float AirTime;
     internal float RestTime;
 
+    // Thrown: its vertical speed last step (to spot the moment it hits the ground) and whether it has hit yet
+    internal float LastVerticalSpeed;
+    internal bool Impacted;
+
+    // Flung by a blast that would have killed it: screaming with its eyes open, it dies when it hits the ground
+    internal bool Doomed;
+
     // Killed in the air and since come to rest: lying still, waiting to shrink
     internal bool Settled;
     internal int WalkingLayer;
@@ -42,6 +49,13 @@ public class Horde_Goblin : Core_RegistrableBehaviour, Combat_IDamageable
 
     // Killed and shrinking away; it goes back to the pool when the shrink ends. Takes no more hits.
     public bool Dead { get; internal set; }
+
+    // How it died, for effects reacting to Killed: the way the killing hit pushed, and whether it was blown apart
+    public Vector3 DeathDirection { get; internal set; }
+    public bool DeathBurst { get; internal set; }
+
+    // Set by Horde_Gibs while Killed fires: it died in pieces (the head came off), for the death sound
+    public bool DiedInPieces { get; set; }
 
     // Hopping out of a hole (Horde_System.SpawnEmerging): its body waits at the landing spot with no collisions while
     // the animation draws the hop; it walks from EmergeEnd. Takes no hits until then.
@@ -56,6 +70,9 @@ public class Horde_Goblin : Core_RegistrableBehaviour, Combat_IDamageable
 
     // The scream while flung (an AudioManager tracked sound), or 0
     internal int ScreamHandle;
+
+    // The scream particles coming out of its mouth while it screams (from Horde_System's pool), or null
+    internal ParticleSystem ScreamParticles;
 
     // What it's heading for, set by whoever sent it (a Wave_Hole), so they can tell their goblins apart. Cleared when
     // it goes back to the pool.

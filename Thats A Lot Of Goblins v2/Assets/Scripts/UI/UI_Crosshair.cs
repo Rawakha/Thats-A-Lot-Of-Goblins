@@ -9,7 +9,8 @@ using UnityEngine.UI;
 //   - The inner fill is empty normally and fills over the main weapon's reload, so the player sees why the guns
 //     stopped and when they're back.
 //   - Every round fired punches it (its UI_Punch); a completed reload gives a bigger punch.
-//   - Ability Ring (optional, testing): takes the selected ability's colour and fills with its cooldown (empty just
+//   - Ability Ring (optional, testing, off by default: Show Ability Ring): when off, the ring image is simply whole in the
+//     No Ability colour, a plain crosshair. When on, it takes the selected ability's colour and fills with its cooldown (empty just
 //     used, whole when ready). Its Image Type must be Filled (Radial 360). Using the ability punches the ring (its
 //     own UI_Punch) and drains it smoothly (a DOTween) instead of snapping empty; the cooldown then refills it.
 // The outline and the fill are UI_Shadowed images, so their shadows follow and match.
@@ -67,6 +68,9 @@ public class UI_Crosshair : MonoBehaviour
     [Min(0f)] [SerializeField] private float reloadPunch = 3f;
 
     [Header("Ability Ring")]
+    [Tooltip("Off: the ring is a plain whole circle in the No Ability colour. On: it shows the selected ability's colour and cooldown.")]
+    [SerializeField] private bool showAbilityRing;
+
     [Tooltip("Optional: an image (e.g. the Outline) tinted the selected ability's colour and filled with its cooldown. Set its Image Type to Filled, Radial 360.")]
     [SerializeField] private Image abilityRing;
 
@@ -270,7 +274,7 @@ public class UI_Crosshair : MonoBehaviour
     // The selected ability went off: punch the ring and drain it from full
     private void OnAbilityUsed(int index)
     {
-        if (abilityRing == null || index != belt.SelectedIndex)
+        if (!showAbilityRing || abilityRing == null || index != belt.SelectedIndex)
             return;
 
         if (abilityRingPunch != null)
@@ -291,6 +295,18 @@ public class UI_Crosshair : MonoBehaviour
     // Colour when the selected ability changes, fill when its cooldown moves (or the drain, while it's higher)
     private void ShowAbilityRing()
     {
+        if (!showAbilityRing)
+        {
+            if (abilityRing != null && !ringShown)
+            {
+                ringShown = true;
+                abilityRing.color = noAbilityColour;
+                abilityRing.fillAmount = 1f;
+            }
+
+            return;
+        }
+
         if (abilityRing == null || belt == null)
             return;
 
