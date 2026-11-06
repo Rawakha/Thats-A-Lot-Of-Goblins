@@ -1,2 +1,2 @@
-# Thats A Lot Of Goblins
-A gold mine, a goblin horde, and no one to stop them but you. Build your operation, position your troops, and reach in yourself - flick goblins off ledges, drag bombs into their path, and set the whole valley alight. Get rich, or die trying.
+# Goblin Extermination Squad
+A game about killing all Goblins, exterminating the race. You play as a human and you have a pickup truck. Go round killing goblins and collecting their parts for harvest. You use hte parts to upgrade and buy new gear to kill Goblins faster.

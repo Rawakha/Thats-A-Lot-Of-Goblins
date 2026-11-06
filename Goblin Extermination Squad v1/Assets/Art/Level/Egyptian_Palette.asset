@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ba3e5fab4eff384d903102ba319e779, type: 3}
+  m_Name: Egyptian_Palette
+  m_EditorClassIdentifier: Assembly-CSharp::Level_Palette
+  material: {fileID: 2100000, guid: dc94ffe7a3f2490ab414262ebba1a3ae, type: 2}
+  bands:
+  - name: Main
+    colour: {r: 0.82, g: 0.65, b: 0.4, a: 1}
+  - name: Trim
+    colour: {r: 0.92, g: 0.76, b: 0.49, a: 1}
+  - name: Band
+    colour: {r: 0.58, g: 0.27, b: 0.16, a: 1}
+  - name: Accent
+    colour: {r: 0.23, g: 0.37, b: 0.33, a: 1}
+  - name: Frame
+    colour: {r: 0.32, g: 0.17, b: 0.14, a: 1}
+  - name: Wood
+    colour: {r: 0.5, g: 0.3, b: 0.16, a: 1}
+  shadeVariation: 0.05
